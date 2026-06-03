@@ -15,6 +15,8 @@ import lesson10 from "../lessons/10-wgsl-bindings/index.html";
 import lesson11 from "../lessons/11-compute-shader-basics/index.html";
 import lesson12 from "../lessons/12-texture-load-store/index.html";
 import lesson13 from "../lessons/13-gpu-basic-filters/index.html";
+import lesson14 from "../lessons/14-gpu-bilinear-upscale/index.html";
+import lesson15 from "../lessons/15-gpu-convolution/index.html";
 
 // 개념 챕터(01, 02)는 실행 코드가 없어 등록하지 않는다 (README 만 존재).
 const lessons: Record<string, unknown> = {
@@ -29,6 +31,8 @@ const lessons: Record<string, unknown> = {
   "11": lesson11,
   "12": lesson12,
   "13": lesson13,
+  "14": lesson14,
+  "15": lesson15,
 };
 
 // 레지스트리 키는 2자리("04")다. "4" 처럼 1자리로 넘겨도 동작하도록 정규화한다.
