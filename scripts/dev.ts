@@ -4,9 +4,16 @@
 //        bun run dev 13
 //
 // 새 lesson 을 추가하면 아래 lessons 레지스트리에 한 줄 등록한다.
+import lesson03 from "../lessons/03-pixel-data/index.html";
+import lesson04 from "../lessons/04-cpu-image-filters/index.html";
+import lesson05 from "../lessons/05-cpu-convolution/index.html";
 import lesson13 from "../lessons/13-gpu-basic-filters/index.html";
 
+// 개념 챕터(01, 02)는 실행 코드가 없어 등록하지 않는다 (README 만 존재).
 const lessons: Record<string, unknown> = {
+  "03": lesson03,
+  "04": lesson04,
+  "05": lesson05,
   "13": lesson13,
 };
 

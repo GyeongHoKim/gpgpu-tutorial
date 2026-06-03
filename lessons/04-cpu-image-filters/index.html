@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>4. CPU로 먼저 만드는 이미지 처리</title>
+    <style>
+      /* figcaption 세부 스타일은 light DOM 쪽에서 준다 (split-view 의 shadow 가 못 건드리므로). */
+      figure figcaption { color: #9ca3af; }
+      /* 컨트롤(select)도 light DOM 이라 여기서 스타일을 준다. */
+      .filter-control { display: flex; align-items: center; gap: 8px;
+        color: #e5e7eb; font: 13px system-ui, sans-serif; }
+      .filter-control select {
+        background: #111827; color: #e5e7eb; border: 1px solid #1f2937;
+        border-radius: 6px; padding: 6px 8px; font: 13px system-ui, sans-serif; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="4. CPU로 먼저 만드는 이미지 처리">
+      <span slot="desc">
+        WebGPU 없이 2D canvas 만으로 grayscale / invert / brightness / nearest 2x / bilinear 2x 를
+        구현합니다. 이 CPU 결과가 이후 GPU 챕터(13장~)의 정답 기준이 됩니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력 (원본)</figcaption>
+          <canvas id="src" width="256" height="256"></canvas>
+        </figure>
+        <figure>
+          <figcaption id="out-label">결과</figcaption>
+          <canvas id="out" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <div slot="controls" class="filter-control">
+        <label for="filter">필터:</label>
+        <select id="filter">
+          <option value="grayscale">grayscale (흑백)</option>
+          <option value="invert">invert (색 반전)</option>
+          <option value="brightness">brightness (+0.2 밝게)</option>
+          <option value="nearest2x">nearest 2x (계단형 확대)</option>
+          <option value="bilinear2x">bilinear 2x (부드러운 확대)</option>
+        </select>
+      </div>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

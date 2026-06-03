@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3. 픽셀 데이터 이해</title>
+    <style>
+      figure figcaption { color: #9ca3af; }
+      /* 확대 캔버스는 픽셀이 또렷하게 보이도록 보간을 끈다. */
+      canvas { image-rendering: pixelated; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="3. 픽셀 데이터 이해">
+      <span slot="desc">
+        이미지에 마우스를 올리면 그 픽셀의 (x, y) 좌표, RGBA(0~255 정수), 0~1 float, UV 좌표를
+        실시간으로 보여줍니다. WebGPU 없이 2D canvas 만으로 픽셀 데이터를 직접 들여다봅니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>테스트 이미지 (마우스를 올려보세요)</figcaption>
+          <canvas id="img" width="256" height="256"></canvas>
+        </figure>
+        <figure>
+          <figcaption>가리킨 픽셀 확대 (16×16 이웃)</figcaption>
+          <canvas id="zoom" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

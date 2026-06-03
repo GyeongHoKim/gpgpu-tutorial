@@ -18,4 +18,4 @@ curl -L -o docs/assets/external/conv.gif "<wikimedia-file-url>"
 
 ## 항목
 
-(아직 없음)
+- `external/2d-convolution-animation.gif` — Author: Michael Plotke, Source: https://commons.wikimedia.org/wiki/File:2D_Convolution_Animation.gif, License: CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/) — 원본을 가공하지 말 것 (5장 convolution 슬라이딩 애니메이션)
