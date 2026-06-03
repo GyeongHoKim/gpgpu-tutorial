@@ -6,3 +6,10 @@ bun.lockb
 .venv/
 __pycache__/
 *.pyc
+
+# 학습 데이터셋 (DIV2K). 다운로드 스크립트(scripts/download-div2k.sh)는 git 에 포함.
+data/
+
+# 학습 산출물 (torch 중간물 + Bun-readable checkpoint). 최종 weights.ts 는 git 에 포함.
+model/*.pt
+model/*.checkpoint
