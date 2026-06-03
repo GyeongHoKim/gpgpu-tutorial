@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>13. GPU Grayscale</title>
+    <style>
+      /* figcaption 세부 스타일은 light DOM 쪽에서 준다 (split-view 의 shadow 가 못 건드리므로). */
+      figure figcaption { color: #9ca3af; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="13. GPU Grayscale">
+      <span slot="desc">
+        compute shader 로 입력 텍스처를 grayscale 로 바꾸고, CPU 결과와 숫자로 비교합니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력</figcaption>
+          <canvas id="src" width="256" height="256"></canvas>
+        </figure>
+        <figure>
+          <figcaption>GPU 출력</figcaption>
+          <canvas id="gpu" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

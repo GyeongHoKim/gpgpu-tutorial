@@ -1,0 +1,6 @@
+# Bun 설정. WGSL 은 코드에서 `with { type: "text" }` 로 불러오므로 별도 loader 설정은 두지 않는다.
+# (자세한 import 방식은 README "권장 구현 방식" 참고)
+
+[test]
+# CPU 기준 구현 테스트는 tests/cpu 아래에 둔다.
+root = "."

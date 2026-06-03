@@ -1,0 +1,17 @@
+{
+  "name": "gpgpu-tutorial",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run scripts/dev.ts",
+    "test": "bun test",
+    "check:webgpu": "bun run scripts/check-webgpu-support.ts",
+    "make:weights": "bun run scripts/make-weights.ts",
+    "create-lesson": "bun run scripts/create-lesson.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@webgpu/types": "latest"
+  }
+}

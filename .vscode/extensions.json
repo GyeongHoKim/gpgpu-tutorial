@@ -1,0 +1,11 @@
+{
+  // 이 저장소를 VS Code에서 열면 추천 확장 설치 알림이 뜹니다.
+  "recommendations": [
+    // docs의 LaTeX 수식($$, ```math)을 미리보기에서 렌더링
+    "shd101wyy.markdown-preview-enhanced",
+    // .wgsl 파일 문법 하이라이팅
+    "PolyMeilex.wgsl",
+    // TS 템플릿 리터럴 안의 /* wgsl */ 인라인 셰이더 하이라이팅
+    "ggsimm.wgsl-literal"
+  ]
+}
