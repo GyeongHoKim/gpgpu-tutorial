@@ -14,9 +14,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 from dataset import DIV2KPatches  # noqa: E402
 from models import FSRCNN  # noqa: E402
 
-HR_DIR = os.environ.get("DIV2K_HR", "data/div2k/DIV2K_valid_HR")
-EPOCHS = int(os.environ.get("EPOCHS", "10"))
+_TRAIN = "data/div2k/DIV2K_train_HR"
+_VALID = "data/div2k/DIV2K_valid_HR"
+HR_DIR = os.environ.get("DIV2K_HR") or (_TRAIN if os.path.isdir(_TRAIN) else _VALID)
+EPOCHS = int(os.environ.get("EPOCHS", "60"))
 BATCH = int(os.environ.get("BATCH", "16"))
+ITERS = int(os.environ.get("ITERS", "500"))  # epoch 당 배치 수
 OUT = "model/fsrcnn.pt"
 
 
@@ -32,11 +35,12 @@ def main() -> None:
     dev = pick_device()
     print(f"device: {dev}  |  HR: {HR_DIR}  |  epochs: {EPOCHS}  batch: {BATCH}")
 
-    ds = DIV2KPatches(HR_DIR, patch_hr=96, scale=2, length=BATCH * 200)
+    ds = DIV2KPatches(HR_DIR, patch_hr=96, scale=2, length=BATCH * ITERS)
     dl = DataLoader(ds, batch_size=BATCH, shuffle=True, num_workers=0)
 
     model = FSRCNN().to(dev)
     opt = torch.optim.Adam(model.parameters(), lr=1e-3)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=EPOCHS, eta_min=1e-5)
 
     for epoch in range(EPOCHS):
         model.train()
@@ -51,7 +55,8 @@ def main() -> None:
             opt.step()
             total += loss.item()
             n += 1
-        print(f"epoch {epoch + 1}/{EPOCHS}  loss {total / n:.6f}")
+        sched.step()
+        print(f"epoch {epoch + 1}/{EPOCHS}  loss {total / n:.6f}  lr {sched.get_last_lr()[0]:.2e}", flush=True)
 
     os.makedirs("model", exist_ok=True)
     torch.save(model.state_dict(), OUT)
