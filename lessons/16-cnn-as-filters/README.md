@@ -53,7 +53,7 @@ CNN 의 convolution layer 는 이 두 가지를 정확히 두 군데에서 바�
 | 출력 | 이미지 1장 | **feature map 여러 장** |
 | 연산 자체 | 주변 패치와 내적 + bias | **똑같음** |
 
-> **학습은 이 챕터에서 다루지 않습니다.** "weight 가 어떻게 좋은 값으로 정해지는가(gradient descent, backpropagation)"는 **옵셔널 트랙 O2·O3** 에서 PyTorch 로 직접 다룹니다. 메인 트랙은 **이미 학습된 weight 를 GPU 에서 추론(inference)** 하는 것만 합니다. 우리는 이 숫자들을 `bun run make:weights` 로 받아 그대로 곱하고 더할 뿐입니다 — 17장부터.
+> **학습은 이 챕터에서 다루지 않습니다.** "weight 가 어떻게 좋은 값으로 정해지는가(gradient descent, backpropagation)"는 **옵셔널 트랙(O3: SRCNN/FSRCNN 학습)** 에서 PyTorch 로 직접 다룹니다. 메인 트랙은 **이미 학습된 weight 를 GPU 에서 추론(inference)** 하는 것만 합니다. 우리는 이 숫자들을 `bun run make:weights` 로 받아 그대로 곱하고 더할 뿐입니다 — 17장부터.
 
 ### 바뀐 점 2: 필터 여러 개 → feature map 여러 장
 
@@ -156,7 +156,13 @@ W = \begin{bmatrix} \mathbf{w}_0^{\top} \\ \mathbf{w}_1^{\top} \\ \vdots \\ \mat
 
 ### activation: 행렬-벡터 곱 다음에 붙는 ReLU
 
-행렬-벡터 곱과 bias 까지만 하면 layer 는 아무리 쌓아도 결국 하나의 큰 선형 변환입니다(선형 변환을 여러 번 합성해도 선형 변환). 그래서 conv 다음에 **비선형 함수 한 개**를 원소별로 끼웁니다. 이게 **activation**(활성화 함수)이고, 이 프로젝트가 쓰는 것은 가장 단순한 **ReLU** 입니다.
+행렬-벡터 곱과 bias 까지만 하면, layer 를 아무리 쌓아도 결국 **하나의 affine 변환**(선형 변환 + 평행이동)으로 합쳐집니다. 두 layer 를 합성해 보면 바로 보입니다.
+
+```math
+W_2(W_1\mathbf{p} + \mathbf{b}_1) + \mathbf{b}_2 = (W_2 W_1)\,\mathbf{p} + (W_2\mathbf{b}_1 + \mathbf{b}_2) = W'\mathbf{p} + \mathbf{b}'
+```
+
+즉 또 하나의 $W'\mathbf{p} + \mathbf{b}'$ 일 뿐입니다(bias 가 전부 0이면 순수 선형 변환). 여러 층을 쌓아도 표현력이 한 층과 똑같아져 의미가 없습니다. 그래서 conv 다음에 **비선형 함수 한 개**를 원소별로 끼웁니다. 이게 **activation**(활성화 함수)이고, 이 프로젝트가 쓰는 것은 가장 단순한 **ReLU** 입니다.
 
 ```math
 \mathrm{ReLU}(x) = \max(0,\ x)
@@ -182,7 +188,7 @@ for 각 출력 픽셀 위치 (x, y):          # GPU 에서는 invocation 하나�
     출력 채널 k 의 (x,y) 자리에 a[k] 저장
 ```
 
-> **주의(feature map 채널 저장):** 출력 채널이 16개면 feature map 이 16장입니다. 그런데 `rgba8` 텍스처는 채널이 **4개**(R·G·B·A)뿐이라, 16채널 feature map 이 텍스처 한 장에 들어가지 않습니다. 그래서 이 프로젝트는 중간 feature map 을 **storage buffer**(채널 수만큼 명시적으로 인덱싱) 나 텍스처 여러 장으로 다룹니다 — **17장에서 구현**합니다. 게다가 conv 출력은 ReLU 이전에 **음수**가 나올 수 있어, 0~1 로 클램프되는 `unorm` 텍스처에 그냥 저장하면 잘립니다(중간 결과는 `r32float` 같은 float storage 로). 지금은 "채널이 4개를 넘으면 텍스처로는 부족하다"는 점만 머리에 담아 두세요.
+> **주의(feature map 채널 저장):** 출력 채널이 16개면 feature map 이 16장입니다. 그런데 `rgba8` 텍스처는 채널이 **4개**(R·G·B·A)뿐이라, 16채널 feature map 이 텍스처 한 장에 들어가지 않습니다. 그래서 이 프로젝트는 중간 feature map 을 **storage buffer**(채널 수만큼 명시적으로 인덱싱) 나 텍스처 여러 장으로 다룹니다 — **17장에서 구현**합니다. 게다가 conv 출력은 ReLU 이전에 **음수**가 나올 수 있어, 0~1 로 클램프되는 `unorm` 텍스처에 그냥 저장하면 잘립니다(중간 결과는 storage buffer 의 `array<f32>` 또는 `r32float` 같은 float texture 로). 지금은 "채널이 4개를 넘으면 텍스처로는 부족하다"는 점만 머리에 담아 두세요.
 
 ### 추론만 다루는 이유
 
@@ -195,7 +201,7 @@ for 각 출력 픽셀 위치 (x, y):          # GPU 에서는 invocation 하나�
 ### 이 관점이 17~19장으로 어떻게 이어지나
 
 - **17장**: 이 챕터의 그림(RGB 3채널 → feature map 16채널)을 **WGSL conv layer 한 장**으로 실제 구현합니다. weight 를 storage buffer 에 올리고, 위 의사코드의 네 단계를 invocation 하나가 수행합니다. 이 한 layer 가 18·19장의 공통 building block 입니다.
-- **18장 SRCNN**: 이 conv layer 를 **3장 쌓습니다**. `Conv 9x9 (3→16, ReLU) → Conv 1x1 (16→16, ReLU) → Conv 5x5 (16→3)`. 각 layer 가 이 챕터의 $\mathbf{o} = \mathrm{ReLU}(W\mathbf{p}+\mathbf{b})$ 를 kernel 크기·채널 수만 바꿔 반복할 뿐입니다.
+- **18장 SRCNN**: 이 conv layer 를 **3장 쌓습니다**. `Conv 9x9 (3→16, ReLU) → Conv 1x1 (16→16, ReLU) → Conv 5x5 (16→3)`. 앞 두 layer 는 이 챕터의 $\mathbf{a} = \mathrm{ReLU}(W\mathbf{p}+\mathbf{b})$ 를 kernel 크기·채널 수만 바꿔 반복하고, **마지막 conv3 은 activation 없이** $W\mathbf{p}+\mathbf{b}$ 로 최종 RGB 픽셀값을 직접 만든 뒤 $[0,1]$ 로 클램프합니다(보통 마지막 layer 는 ReLU 를 빼서 최종 값을 그대로 출력합니다 — `model/architecture.md` 참고).
 - **19장 FSRCNN**: 같은 conv layer 를 더 많이 쌓고, 마지막 확대를 **학습된 deconvolution** 으로 합니다. deconvolution 도 "학습된 weight 로 하는 convolution 류 연산"이라는 점에서 이 챕터의 관점 위에 있습니다.
 
 즉 18·19장의 복잡해 보이는 구조도, 전부 **"이 챕터의 conv layer 를 kernel 과 채널 수만 바꿔 여러 번 쌓은 것"** 입니다. 이 챕터에서 layer 한 장의 정의를 확실히 잡아 두면, 나머지는 반복입니다.
