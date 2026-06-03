@@ -59,7 +59,7 @@ bun run dev 13      # 13장 개발 서버 (http://localhost:5173)
 - [16. CNN을 이미지 필터 관점에서 (개념)](./lessons/16-cnn-as-filters/README.md)
 - [17. 최소 CNN Layer 1개 구현](./lessons/17-single-cnn-layer/README.md)
 - [18. SRCNN Super Resolution](./lessons/18-srcnn-super-resolution/README.md)
-- 19. FSRCNN Super Resolution _(작성 예정)_
+- [19. FSRCNN Super Resolution](./lessons/19-fsrcnn-super-resolution/README.md)
 
 **Part 7~8. 비디오 플레이어 · 실무** _(작성 예정)_
 - 20~22 비디오 프레임 연결·실시간 SR 데모, 23~25 성능·디버깅·실무 제약
