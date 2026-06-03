@@ -14,6 +14,7 @@
 import { createStorageBuffer, createUniformBuffer } from "./buffer.ts";
 import type { SrLayer } from "./sr-model.ts";
 import convCode from "./shaders/conv.wgsl" with { type: "text" };
+import deconvCode from "./shaders/deconv.wgsl" with { type: "text" };
 import rgbToFeatCode from "./shaders/rgb-to-features.wgsl" with { type: "text" };
 import featToRgbCode from "./shaders/features-to-rgb.wgsl" with { type: "text" };
 
@@ -83,8 +84,61 @@ export function uploadConvLayer(
   return { weight, bias, params, inC: layer.inC, outC: layer.outC, width, height };
 }
 
+/** GPU 에 올라간 deconvolution(transposed conv) layer. 출력 크기가 입력의 stride 배. */
+export interface GpuDeconvLayer {
+  weight: GPUBuffer;
+  bias: GPUBuffer;
+  params: GPUBuffer;
+  inC: number;
+  outC: number;
+  outW: number;
+  outH: number;
+}
+
+/**
+ * deconvolution layer 를 GPU 버퍼로 올린다. 출력 크기는
+ *   outW = (inW-1)*stride - 2*pad + kw + outputPadding (height 도 동일).
+ * weight 레이아웃은 [inC][outC][kh][kw] (PyTorch ConvTranspose2d).
+ */
+export function uploadDeconvLayer(
+  device: GPUDevice,
+  layer: SrLayer,
+  inW: number,
+  inH: number,
+  stride: number,
+  pad: number,
+  outputPadding: number,
+): GpuDeconvLayer {
+  if (layer.type !== "deconv") {
+    throw new Error(`uploadDeconvLayer: deconv 레이어만 지원합니다 (받음: ${layer.type}).`);
+  }
+  const expectWeight = layer.inC * layer.outC * layer.kh * layer.kw;
+  if (layer.weight.length !== expectWeight) {
+    throw new Error(
+      `deconv "${layer.name}": weight 길이 ${layer.weight.length} != ${expectWeight} (inC*outC*kh*kw).`,
+    );
+  }
+  if (layer.bias.length !== layer.outC) {
+    throw new Error(`deconv "${layer.name}": bias 길이 ${layer.bias.length} != outC ${layer.outC}.`);
+  }
+  const outW = (inW - 1) * stride - 2 * pad + layer.kw + outputPadding;
+  const outH = (inH - 1) * stride - 2 * pad + layer.kh + outputPadding;
+  const weight = createStorageBuffer(device, layer.weight);
+  const bias = createStorageBuffer(device, layer.bias);
+  const params = createUniformBuffer(
+    device,
+    new Uint32Array([
+      inW, inH, outW, outH,
+      layer.inC, layer.outC, layer.kh, layer.kw,
+      stride, pad, 0, 0,
+    ]),
+  );
+  return { weight, bias, params, inC: layer.inC, outC: layer.outC, outW, outH };
+}
+
 export class CnnRunner {
   private convPipeline: GPUComputePipeline;
+  private deconvPipeline: GPUComputePipeline;
   private rgbPipeline: GPUComputePipeline;
   private featPipeline: GPUComputePipeline;
 
@@ -95,6 +149,7 @@ export class CnnRunner {
         compute: { module: device.createShaderModule({ code }), entryPoint: "main" },
       });
     this.convPipeline = make(convCode);
+    this.deconvPipeline = make(deconvCode);
     this.rgbPipeline = make(rgbToFeatCode);
     this.featPipeline = make(featToRgbCode);
   }
@@ -151,6 +206,33 @@ export class CnnRunner {
     pass.setPipeline(this.convPipeline);
     pass.setBindGroup(0, bg);
     this.dispatch(pass, layer.width, layer.height);
+    pass.end();
+  }
+
+  /**
+   * deconvolution layer 한 장 실행: inBuf(LR) -> outBuf(HR, stride 배 확대).
+   * dispatch 는 출력 크기(layer.outW/outH)로.
+   */
+  runDeconv(
+    encoder: GPUCommandEncoder,
+    layer: GpuDeconvLayer,
+    inBuf: GPUBuffer,
+    outBuf: GPUBuffer,
+  ): void {
+    const bg = this.device.createBindGroup({
+      layout: this.deconvPipeline.getBindGroupLayout(0),
+      entries: [
+        { binding: 0, resource: { buffer: inBuf } },
+        { binding: 1, resource: { buffer: outBuf } },
+        { binding: 2, resource: { buffer: layer.weight } },
+        { binding: 3, resource: { buffer: layer.bias } },
+        { binding: 4, resource: { buffer: layer.params } },
+      ],
+    });
+    const pass = encoder.beginComputePass();
+    pass.setPipeline(this.deconvPipeline);
+    pass.setBindGroup(0, bg);
+    this.dispatch(pass, layer.outW, layer.outH);
     pass.end();
   }
 
