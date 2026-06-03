@@ -7,6 +7,13 @@
 import lesson03 from "../lessons/03-pixel-data/index.html";
 import lesson04 from "../lessons/04-cpu-image-filters/index.html";
 import lesson05 from "../lessons/05-cpu-convolution/index.html";
+import lesson06 from "../lessons/06-webgpu-init/index.html";
+import lesson07 from "../lessons/07-buffer-and-texture/index.html";
+import lesson08 from "../lessons/08-bind-group-and-pipeline/index.html";
+import lesson09 from "../lessons/09-wgsl-basics/index.html";
+import lesson10 from "../lessons/10-wgsl-bindings/index.html";
+import lesson11 from "../lessons/11-compute-shader-basics/index.html";
+import lesson12 from "../lessons/12-texture-load-store/index.html";
 import lesson13 from "../lessons/13-gpu-basic-filters/index.html";
 
 // 개념 챕터(01, 02)는 실행 코드가 없어 등록하지 않는다 (README 만 존재).
@@ -14,6 +21,13 @@ const lessons: Record<string, unknown> = {
   "03": lesson03,
   "04": lesson04,
   "05": lesson05,
+  "06": lesson06,
+  "07": lesson07,
+  "08": lesson08,
+  "09": lesson09,
+  "10": lesson10,
+  "11": lesson11,
+  "12": lesson12,
   "13": lesson13,
 };
 

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>6. WebGPU 초기화</title>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="6. WebGPU 초기화">
+      <span slot="desc">
+        raw WebGPU API 로 adapter → device → queue → canvas context 를 직접 얻고,
+        adapter 정보와 선호 canvas format 을 stats 패널에 표시합니다. (compute/render pass 는 다음 챕터)
+      </span>
+
+      <!-- context 를 붙일 캔버스. 이 챕터는 화면에 그리지 않고 configure 까지만 한다. -->
+      <canvas slot="stage" id="gpu" width="256" height="160"></canvas>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

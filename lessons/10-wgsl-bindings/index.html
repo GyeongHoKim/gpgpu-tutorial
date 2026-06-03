@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>10. WGSL 주소 공간과 바인딩</title>
+    <style>
+      /* figcaption 세부 스타일은 light DOM 쪽에서 준다 (split-view 의 shadow 가 못 건드리므로). */
+      figure figcaption { color: #9ca3af; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="10. WGSL 주소 공간과 바인딩">
+      <span slot="desc">
+        입력 텍스처 + uniform 버퍼(tint 색·강도)를 받아 storage 텍스처에 tint 를 적용합니다.
+        @group/@binding 과 JS createBindGroup entries 의 대응, 그리고 uniform 메모리 정렬을 봅니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력</figcaption>
+          <canvas id="src" width="256" height="256"></canvas>
+        </figure>
+        <figure>
+          <figcaption>GPU 출력 (tint 적용)</figcaption>
+          <canvas id="gpu" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

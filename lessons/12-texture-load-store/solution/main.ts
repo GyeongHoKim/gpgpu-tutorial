@@ -1,0 +1,108 @@
+// 12장 정답 코드. textureLoad / textureStore 로 입력 텍스처를 읽어 R↔B 채널을 스왑하고
+// 출력 텍스처에 써넣는 전체 흐름을 보여준다. 입력과 출력은 서로 다른 텍스처다.
+import { initWebGPU, configureCanvas } from "@core/webgpu.ts";
+import {
+  createTextureFromSource,
+  createStorageTexture,
+  readTextureRGBA,
+} from "@core/texture.ts";
+import { createComputePipeline, dispatchSizeFor } from "@core/pipeline.ts";
+import { Blitter } from "@core/blit.ts";
+import { measureGpuMs } from "@core/gpu-timer.ts";
+import { makeTestImageCanvas } from "@core/test-image.ts";
+import { maxAbsDiff } from "@math/color.ts";
+import transformShader from "../shaders/transform.wgsl" with { type: "text" };
+
+import "@ui/lesson-shell.ts";
+import "@ui/split-view.ts";
+import "@ui/stats-panel.ts";
+
+const WIDTH = 256;
+const HEIGHT = 256;
+
+/**
+ * CPU 기준 변환: R 채널과 B 채널을 맞바꾼다(채널 스왑). 알파는 보존.
+ * GPU 셰이더(transform.wgsl)의 변환과 반드시 동일해야 비교가 의미를 가진다.
+ * (src/math/color.ts 에 swap 이 없어 lesson 로컬로 둔다. 다른 챕터에서도 쓰면 승격 고려.)
+ */
+function swapRB(rgba: Uint8ClampedArray): Uint8ClampedArray {
+  const out = new Uint8ClampedArray(rgba.length);
+  for (let i = 0; i < rgba.length; i += 4) {
+    out[i] = rgba[i + 2]; // R <- B
+    out[i + 1] = rgba[i + 1]; // G 그대로
+    out[i + 2] = rgba[i]; // B <- R
+    out[i + 3] = rgba[i + 3]; // A 보존
+  }
+  return out;
+}
+
+async function main() {
+  const stats = document.getElementById("stats") as HTMLElement & {
+    set(label: string, value: string): void;
+  };
+
+  // 1) 입력 이미지를 코드로 생성하고 입력 캔버스에 그린다.
+  const srcCanvas = makeTestImageCanvas(WIDTH, HEIGHT);
+  const srcDisplay = document.getElementById("src") as HTMLCanvasElement;
+  srcDisplay.getContext("2d")!.drawImage(srcCanvas, 0, 0);
+
+  // 2) WebGPU 초기화.
+  const { device } = await initWebGPU();
+  const gpuCanvas = document.getElementById("gpu") as HTMLCanvasElement;
+  const { context, format } = configureCanvas(device, gpuCanvas);
+
+  // 3) 입력 텍스처(읽기 전용) + 출력 storage 텍스처(쓰기 전용).
+  //    WebGPU 에서 같은 텍스처를 동시에 read/write 할 수 없으므로 반드시 분리한다.
+  const inputTex = createTextureFromSource(device, srcCanvas, {
+    width: WIDTH,
+    height: HEIGHT,
+  });
+  const outputTex = createStorageTexture(device, WIDTH, HEIGHT);
+
+  // 4) compute pipeline + bind group.
+  const pipeline = createComputePipeline(device, transformShader);
+  const bindGroup = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: inputTex.createView() },
+      { binding: 1, resource: outputTex.createView() },
+    ],
+  });
+
+  // 5) compute pass dispatch + 시간 측정.
+  const [gx, gy] = dispatchSizeFor(WIDTH, HEIGHT, [8, 8]);
+  const gpuMs = await measureGpuMs(device, () => {
+    const encoder = device.createCommandEncoder();
+    const pass = encoder.beginComputePass();
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.dispatchWorkgroups(gx, gy);
+    pass.end();
+    device.queue.submit([encoder.finish()]);
+  });
+
+  // 6) 결과를 화면에 그린다 (blit).
+  const blitter = new Blitter(device, format);
+  blitter.blit(context, outputTex);
+
+  // 7) CPU 기준과 숫자로 비교한다 (눈이 아니라 숫자로).
+  const srcPixels = srcCanvas
+    .getContext("2d")!
+    .getImageData(0, 0, WIDTH, HEIGHT).data;
+  const cpuSwapped = swapRB(srcPixels);
+  const gpuPixels = await readTextureRGBA(device, outputTex, WIDTH, HEIGHT);
+  const diff = maxAbsDiff(cpuSwapped, gpuPixels);
+
+  stats.set("GPU 시간", `${gpuMs.toFixed(2)} ms`);
+  stats.set("CPU vs GPU 최대차", `${diff} / 255`);
+  // rgba8unorm 양자화 때문에 1~2 정도의 오차는 정상이다.
+  stats.set("판정", diff <= 2 ? "✅ 일치 (오차 ≤ 2)" : "⚠️ 차이가 큼");
+}
+
+main().catch((err) => {
+  console.error(err);
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    `<pre style="color:#f87171; padding:16px; white-space:pre-wrap">${String(err)}</pre>`,
+  );
+});

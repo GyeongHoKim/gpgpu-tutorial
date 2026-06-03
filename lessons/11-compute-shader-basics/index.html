@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>11. Compute Shader 기초</title>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="11. Compute Shader 기초">
+      <span slot="desc">
+        입력 없이 좌표(global_invocation_id)만으로 패턴을 생성하는 첫 compute shader 를 만듭니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>GPU 출력 (패턴)</figcaption>
+          <canvas id="gpu" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>7. Buffer와 Texture</title>
+    <style>
+      /* figcaption 세부 스타일은 light DOM 쪽에서 준다 (split-view 의 shadow 가 못 건드리므로). */
+      figure figcaption { color: #9ca3af; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="7. Buffer와 Texture">
+      <span slot="desc">
+        이미지를 GPUTexture 에 올려 화면에 표시하고(이미지 -> GPU texture -> 화면),
+        파라미터용 uniform 버퍼를 만들어 봅니다. 여기서는 <strong>생성과 usage 플래그</strong>에
+        집중합니다 (실제 셰이더 사용은 10장에서).
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력 (canvas)</figcaption>
+          <canvas id="src" width="256" height="256"></canvas>
+        </figure>
+        <figure>
+          <figcaption>GPU texture 왕복 후 화면</figcaption>
+          <canvas id="gpu" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

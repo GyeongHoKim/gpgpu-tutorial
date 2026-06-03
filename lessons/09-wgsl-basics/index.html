@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>9. WGSL 기본 문법</title>
+    <style>
+      /* figcaption 세부 스타일은 light DOM 쪽에서 준다 (split-view 의 shadow 가 못 건드리므로). */
+      figure figcaption { color: #9ca3af; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="9. WGSL 기본 문법">
+      <span slot="desc">
+        입력 이미지 없이, 픽셀 좌표만으로 색을 계산하는 compute shader 로
+        let/var, 타입과 변환, vec 연산, 사용자 정의 함수를 한 화면에서 읽어봅니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>GPU 출력 (좌표 → 색 계산)</figcaption>
+          <canvas id="gpu" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
