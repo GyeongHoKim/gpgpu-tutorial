@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>17. 최소 CNN Layer 1개</title>
+    <style>
+      /* figcaption 세부 스타일은 light DOM 쪽에서 준다 (split-view 의 shadow 가 못 건드리므로). */
+      figure figcaption { color: #9ca3af; }
+      /* 채널 선택 select 의 기본 스타일 (shell 의 shadow 밖이라 light DOM 에서 준다). */
+      .channel-pick { color: #e5e7eb; font: 13px system-ui, sans-serif;
+                      display: flex; gap: 8px; align-items: center; }
+      .channel-pick select { background: #111827; color: #e5e7eb;
+                             border: 1px solid #1f2937; border-radius: 6px; padding: 4px 8px; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="17. 최소 CNN Layer 1개 구현">
+      <span slot="desc">
+        RGB 입력에 conv layer 한 장(3채널 → feature map 16장, ReLU)을 GPU 로 돌리고,
+        선택한 feature map 한 장을 grayscale 로 봅니다. filter 마다 도드라지는 특징이 다릅니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력 (RGB)</figcaption>
+          <canvas id="src" width="256" height="256"></canvas>
+        </figure>
+        <figure>
+          <figcaption>선택한 feature map (grayscale)</figcaption>
+          <canvas id="gpu" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <label class="channel-pick" slot="controls">
+        feature 채널:
+        <select id="channel"></select>
+      </label>
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
