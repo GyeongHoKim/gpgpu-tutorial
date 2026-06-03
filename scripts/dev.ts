@@ -17,10 +17,12 @@ const lessons: Record<string, unknown> = {
   "13": lesson13,
 };
 
-const arg = process.argv[2] ?? "13";
+// 레지스트리 키는 2자리("04")다. "4" 처럼 1자리로 넘겨도 동작하도록 정규화한다.
+const rawArg = process.argv[2] ?? "13";
+const arg = /^\d+$/.test(rawArg) ? rawArg.padStart(2, "0") : rawArg;
 const html = lessons[arg] ?? lesson13;
 if (!lessons[arg]) {
-  console.warn(`lesson "${arg}" 이 아직 없습니다. 13장으로 엽니다.`);
+  console.warn(`lesson "${rawArg}" 이 아직 없습니다. 13장으로 엽니다.`);
 }
 
 const server = Bun.serve({

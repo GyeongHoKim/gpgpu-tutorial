@@ -6,7 +6,7 @@
 
 ```bash
 bun install        # 처음 한 번
-bun run dev 4      # 4장 개발 서버 (http://localhost:5173)
+bun run dev 04     # 4장 개발 서버 (http://localhost:5173)
 ```
 
 > 이 챕터는 GPU 가 없어도 동작합니다. 2D canvas 만 씁니다.

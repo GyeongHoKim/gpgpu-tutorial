@@ -6,7 +6,7 @@
 
 ```bash
 bun install        # 처음 한 번
-bun run dev 5      # 5장 개발 서버 (http://localhost:5173)
+bun run dev 05     # 5장 개발 서버 (http://localhost:5173)
 ```
 
 WebGPU 가 필요 없으므로 브라우저는 아무거나 최신이면 됩니다.
