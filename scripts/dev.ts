@@ -19,6 +19,7 @@ import lesson14 from "../lessons/14-gpu-bilinear-upscale/index.html";
 import lesson15 from "../lessons/15-gpu-convolution/index.html";
 import lesson17 from "../lessons/17-single-cnn-layer/index.html";
 import lesson18 from "../lessons/18-srcnn-super-resolution/index.html";
+import lesson19 from "../lessons/19-fsrcnn-super-resolution/index.html";
 
 // 개념 챕터(01, 02)는 실행 코드가 없어 등록하지 않는다 (README 만 존재).
 const lessons: Record<string, unknown> = {
@@ -37,6 +38,7 @@ const lessons: Record<string, unknown> = {
   "15": lesson15,
   "17": lesson17,
   "18": lesson18,
+  "19": lesson19,
 };
 
 // 레지스트리 키는 2자리("04")다. "4" 처럼 1자리로 넘겨도 동작하도록 정규화한다.

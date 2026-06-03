@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>19. FSRCNN Super Resolution</title>
+    <style>
+      /* figcaption 세부 스타일은 light DOM 쪽에서 준다 (split-view 의 shadow 가 못 건드리므로). */
+      figure figcaption { color: #9ca3af; }
+      /* 입력은 128 로 작지만, 출력(256)과 나란히 비교하기 쉽게 화면에서는 같은 크기로 늘려 본다.
+         pixelated 로 늘려야 "원래 거칠다"는 게 드러난다. */
+      #src { width: 256px; height: 256px; image-rendering: pixelated; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="19. FSRCNN Super Resolution">
+      <span slot="desc">
+        작은 LR 입력(128×128)을 그대로 학습된 FSRCNN(conv 5장)에 넣어 LR 해상도에서 디테일을
+        뽑은 뒤, 마지막 <b>deconvolution</b> 으로 2x 확대(256×256)합니다. SRCNN(먼저 확대 후 처리)과
+        달리 확대를 맨 끝에서 합니다. "bilinear 확대"와 "FSRCNN 결과"를 나란히 비교하고, 원본 HR
+        대비 차이를 숫자로 봅니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력 LR (128×128, 화면에선 확대 표시)</figcaption>
+          <canvas id="src" width="128" height="128"></canvas>
+        </figure>
+        <figure>
+          <figcaption>bilinear 확대 (256×256)</figcaption>
+          <canvas id="bilinear" width="256" height="256"></canvas>
+        </figure>
+        <figure>
+          <figcaption>FSRCNN 결과 (256×256)</figcaption>
+          <canvas id="fsrcnn" width="256" height="256"></canvas>
+        </figure>
+      </split-view>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
