@@ -97,7 +97,7 @@ IDIS Pylon 파트의 신입 웹 개발자가 WebGPU와 WGSL을 단계적으로 �
 - **버퍼 정렬(alignment)**: `vec3f`는 16바이트 정렬. weight/uniform 데이터를 `Float32Array`로 채울 때 패딩을 맞춰야 한다.
 - **좌표계 Y 뒤집힘**: canvas/video 원점과 텍스처 좌표 관례가 달라 결과가 상하 반전될 수 있다.
 - **feature map 채널 저장**: `rgba8` 텍스처는 채널 4개뿐. 8채널 feature map은 storage buffer나 텍스처 여러 장으로 다룬다 (이 프로젝트는 storage buffer + 명시적 인덱싱을 기본으로).
-- **residual 음수 클리핑**: residual은 음수가 나올 수 있다. `unorm` 텍스처(0~1 클램프)에 저장하면 잘린다. 중간 결과는 `r32float`/float storage로.
+- **음수 값 클리핑 (feature map/중간 결과)**: conv 출력이나 중간 feature map은 음수가 나올 수 있다(특히 ReLU 이전). `unorm` 텍스처(0~1 클램프)에 저장하면 잘린다. 중간 결과는 `r32float`/float storage 로. SRCNN/FSRCNN 의 중간 feature map 모두 해당.
 
 ## 코드·스택 규약
 

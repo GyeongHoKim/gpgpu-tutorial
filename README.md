@@ -64,8 +64,8 @@ CNN Super Resolution을 처음부터 "딥러닝"으로 설명하지 않습니다
 
 두 트랙은 다음 계약을 공유하므로, 옵셔널 트랙에서 직접 학습한 결과를 메인 트랙에 그대로 끼울 수 있습니다.
 
-- **아키텍처 스펙**: `RGB -> 8 -> 8 -> RGB residual`, 3x3 convolution, ReLU (18장 구조와 동일)
-- **export 포맷**: weight 텐서 순서 `[outC][inC][kh][kw]` + bias, 입력은 `[0,1]` 정규화
+- **아키텍처 스펙**: 두 모델 **SRCNN**(18장)과 **FSRCNN**(19장). 각 레이어의 커널/채널은 18·19장 구조와 동일
+- **export 포맷**: weight 텐서 순서 `[outC][inC][kh][kw]` + bias, 입력은 `[0,1]` 정규화 (deconvolution 레이어 레이아웃은 19장에서 별도 명시)
 - **연결 경로**: 옵셔널에서 학습한 checkpoint를 `model/`에 넣고 `bun run make:weights`를 다시 실행하면 메인 레슨이 그 모델로 동작
 
 권장 순서는 **메인 트랙을 먼저 끝내는 것**입니다. 쉐이더로 결과를 먼저 보면 동기부여가 되고 GPU 쪽 그림이 잡힌 상태에서 학습을 이해하기 쉽습니다. 다만 신경망이 궁금하면 16장 전에 옵셔널 트랙을 먼저 봐도 됩니다.
@@ -229,48 +229,68 @@ CNN Super Resolution을 처음부터 "딥러닝"으로 설명하지 않습니다
 #### 17. 최소 CNN Layer 1개 구현
 
 - RGB 입력
-- 3x3 convolution
-- 3 input channels에서 8 feature channels로 변환
+- convolution (예: 3 input channels에서 16 feature channels로 변환)
 - ReLU
 - weight와 bias를 storage buffer에 저장
-- 중간 feature map 저장
+- 중간 feature map 저장 (rgba8 텍스처는 채널 4개뿐 — 16채널 feature map은 storage buffer 또는 텍스처 여러 장으로)
+- 이 한 레이어가 18장 SRCNN, 19장 FSRCNN의 공통 building block이다
 
-> 여기서 쓰는 weight는 `bun run make:weights`로 생성된 값입니다. 이 숫자들이 어디서 왔는지 궁금하면 옵셔널 트랙(O3)에서 직접 학습해 만들 수 있습니다.
+> 여기서 쓰는 weight는 `bun run make:weights`로 생성된 값입니다. 이 숫자들이 어디서 왔는지 궁금하면 옵셔널 트랙(O3)에서 SRCNN/FSRCNN을 직접 학습해 만들 수 있습니다.
 
-#### 18. 최소 CNN Super Resolution
+#### 18. SRCNN Super Resolution
 
-권장 구조는 다음과 같습니다.
+이 튜토리얼은 **두 개의 고전 CNN SR 모델**을 만듭니다. 18장은 그중 첫 번째인 **SRCNN**(Super-Resolution CNN, 2014) — "최초의 CNN 기반 SR"입니다.
+
+SRCNN은 먼저 bilinear/bicubic으로 확대한 뒤, conv 레이어 3개로 디테일을 복원합니다. 교육용 tiny 버전 구조:
 
 ```text
 low-resolution RGB frame
--> bilinear 2x upscale
--> Conv 3x3, RGB -> 8 channels
--> ReLU
--> Conv 3x3, 8 channels -> 8 channels
--> ReLU
--> Conv 3x3, 8 channels -> RGB residual
--> output = bilinear result + residual
+-> bilinear 2x upscale                  (먼저 확대해서 HR 해상도로)
+-> Conv 9x9, RGB(3) -> 16 ch, ReLU      (patch extraction)
+-> Conv 1x1, 16 -> 16 ch, ReLU          (non-linear mapping)
+-> Conv 5x5, 16 -> RGB(3)               (reconstruction)
+-> output = HR RGB frame
 ```
 
-이 구조는 실제 고성능 Super Resolution 모델보다 훨씬 작지만, SR의 핵심 아이디어를 설명하기에 충분합니다.
+핵심 개념:
 
-핵심 개념은 다음과 같습니다.
+- 먼저 bilinear로 확대하고, conv 스택이 그 위에서 디테일을 복원한다 (확대와 복원이 분리됨).
+- 큰 커널(9x9, 5x5)로 넓은 주변 정보를 본다 — compute shader 에서 texture read 횟수가 많아지는 점을 체감한다.
+- residual 없이 HR 이미지를 직접 출력한다 (residual 개선은 이후 VDSR 계열의 아이디어).
 
-- bilinear upscale은 기본 확대 결과를 만든다.
-- CNN은 확대된 이미지 위에 추가 디테일을 보정한다.
-- 마지막 레이어는 완성 이미지를 직접 만들기보다 residual을 만든다.
-- 최종 출력은 기본 확대 이미지와 residual을 더한 결과다.
+#### 19. FSRCNN Super Resolution
+
+19장은 두 번째 모델 **FSRCNN**(Fast SRCNN, 2016) — SRCNN을 빠르게 개선한 버전입니다. 실시간 비디오 SR을 겨냥해 설계되어 회사 비디오 플레이어 맥락과 잘 맞습니다.
+
+FSRCNN은 LR 해상도에서 무거운 연산을 끝내고, **마지막에 deconvolution(transposed convolution)으로 확대**합니다. 교육용 tiny 버전 구조:
+
+```text
+low-resolution RGB frame                (확대하지 않고 LR 그대로 입력)
+-> Conv 5x5, RGB(3) -> 16 ch, ReLU      (feature extraction)
+-> Conv 1x1, 16 -> 8 ch                 (shrinking)
+-> Conv 3x3, 8 -> 8 ch, ReLU   (x2)     (mapping)
+-> Conv 1x1, 8 -> 16 ch                 (expanding)
+-> Deconv 9x9, stride 2, 16 -> RGB(3)   (deconvolution = 학습된 확대)
+-> output = HR RGB frame
+```
+
+핵심 개념과 SRCNN과의 대비:
+
+- 무거운 conv 연산을 작은 LR 해상도에서 수행 → 같은 품질을 더 빠르게 (실시간에 유리).
+- 확대를 bilinear 같은 고정 방식이 아니라 **학습된 deconvolution**으로 한다.
+- deconvolution 은 **checkerboard artifact**(격자 무늬) 라는 새로운 함정을 만든다 — 이 챕터에서 다룬다.
+- 18장(SRCNN: 먼저 확대 → 처리)과 19장(FSRCNN: 처리 → deconv 확대)의 구조 차이를 비교한다.
 
 ### Part 7. Video Player에 연결
 
-#### 19. 정지 이미지에서 비디오 프레임으로 확장
+#### 20. 정지 이미지에서 비디오 프레임으로 확장
 
 - 이미지 파일 대신 `<video>` 프레임 사용
 - 매 프레임 GPU texture 갱신
 - texture 재사용
 - 처리 결과를 canvas에 출력
 
-#### 20. `requestVideoFrameCallback` 통합
+#### 21. `requestVideoFrameCallback` 통합
 
 - 콜백 등록 방식
 - 프레임 타임스탬프
@@ -278,10 +298,11 @@ low-resolution RGB frame
 - GPU 작업이 늦을 때 프레임을 스킵하는 전략
 - 매 프레임 새 객체를 만들지 않는 구조
 
-#### 21. 실시간 Super Resolution 데모
+#### 22. 실시간 Super Resolution 데모
 
 - 원본과 SR 결과 비교
 - split view
+- **SRCNN vs FSRCNN 전환 및 비교** (품질·속도)
 - SR on/off toggle
 - scale factor 선택
 - FPS 표시
@@ -290,7 +311,7 @@ low-resolution RGB frame
 
 ### Part 8. 실무 감각
 
-#### 22. 성능 최적화 기초
+#### 23. 성능 최적화 기초
 
 - texture read 횟수 줄이기
 - workgroup size 선택
@@ -299,7 +320,7 @@ low-resolution RGB frame
 - 프레임마다 생성하면 안 되는 객체 구분
 - GPU 처리 시간이 프레임 예산을 넘는 경우 대응
 
-#### 23. 디버깅 방법
+#### 24. 디버깅 방법
 
 - shader compile error 읽기
 - 검은 화면 원인 찾기
@@ -308,7 +329,7 @@ low-resolution RGB frame
 - out-of-bounds 좌표
 - CPU fallback으로 결과 검증
 
-#### 24. 회사 비디오 플레이어로 가기 전에 알아야 할 것
+#### 25. 회사 비디오 플레이어로 가기 전에 알아야 할 것
 
 - RGB와 YUV
 - 색공간
@@ -343,15 +364,16 @@ low-resolution RGB frame
 - 학습이란 weight를 조금씩 고치는 과정이라는 관점
 - 메인 트랙의 convolution이 학습 가능한 레이어가 되는 방식
 
-#### O3. tiny SR 모델 학습하기
+#### O3. SRCNN / FSRCNN 학습하기
 
-- 메인 트랙과 동일한 아키텍처 (`RGB -> 8 -> 8 -> RGB residual`)
+- 메인 트랙과 동일한 두 아키텍처(SRCNN, FSRCNN)를 PyTorch로 정의
 - 저해상/고해상 이미지 쌍으로 학습 데이터 만들기
-- residual learning으로 학습시키기
+- SRCNN(먼저 확대 후 복원)과 FSRCNN(deconvolution으로 확대) 각각 학습
+- deconvolution(transposed conv) 레이어의 학습과 checkerboard artifact
 - 학습된 모델을 checkpoint로 저장
-- export 포맷 (`[outC][inC][kh][kw]` + bias)에 맞춰 내보내기
+- export 포맷 (`[outC][inC][kh][kw]` + bias, deconv 별도)에 맞춰 내보내기
 - `model/`에 넣고 `bun run make:weights`로 메인 레슨에 연결
-- 내가 학습한 weight로 메인 트랙 SR 데모가 동작하는지 확인
+- 내가 학습한 weight로 메인 트랙 SR 데모(18·19장)가 동작하는지 확인
 
 #### O4. GAN 기반 Super Resolution 개요
 
@@ -384,15 +406,16 @@ lessons/
   15-gpu-convolution/
   16-cnn-as-filters/
   17-single-cnn-layer/
-  18-minimal-cnn-sr/
-  19-video-frame-input/
-  20-request-video-frame-callback/
-  21-realtime-sr-player/
+  18-srcnn-super-resolution/
+  19-fsrcnn-super-resolution/
+  20-video-frame-input/
+  21-request-video-frame-callback/
+  22-realtime-sr-player/
 
   optional/
     O1-pytorch-setup/
     O2-nn-and-training-basics/
-    O3-train-tiny-sr/
+    O3-train-srcnn-fsrcnn/
     O4-gan-sr-overview/
 ```
 
@@ -446,21 +469,21 @@ if (!navigator.gpu) {
 
 ## 구현할 최소 SR 모델의 범위
 
-이 저장소의 CNN Super Resolution은 교육용 최소 구현입니다.
+이 저장소의 CNN Super Resolution은 교육용 최소 구현입니다. 두 고전 모델 **SRCNN**과 **FSRCNN**의 tiny 버전을 만듭니다.
 
 메인 트랙에 포함하는 것:
 
 - 2x upscale
 - RGB 입력
-- 3x3 convolution
+- SRCNN (9x9 / 1x1 / 5x5 conv, bilinear 선확대)
+- FSRCNN (5x5 / 1x1 / 3x3 / deconvolution, LR 입력)
 - ReLU
-- residual output
-- WGSL 기반 추론
+- WGSL 기반 추론 (convolution 및 deconvolution)
 - 비디오 프레임 단위 실행
 
 옵셔널 트랙에 포함하는 것:
 
-- 모델 학습 (PyTorch, tiny SR 아키텍처)
+- 모델 학습 (PyTorch로 SRCNN, FSRCNN 학습)
 - 메인 트랙에서 쓰는 weight를 직접 만들기
 - GAN 기반 SR(SRGAN/ESRGAN) 개념 개요
 
@@ -709,7 +732,7 @@ gpgpu-tutorial/
         weights.ts
       solution/
 
-    18-minimal-cnn-sr/
+    18-srcnn-super-resolution/
       README.md
       exercise.md
       index.html
@@ -717,15 +740,30 @@ gpgpu-tutorial/
         main.ts
       shaders/
         bilinear-upscale.wgsl
-        conv-rgb-to-features.wgsl
-        conv-features.wgsl
-        conv-features-to-rgb.wgsl
-        compose-residual.wgsl
+        srcnn-conv1-9x9.wgsl
+        srcnn-conv2-1x1.wgsl
+        srcnn-conv3-5x5.wgsl
       model/
-        weights.ts
+        srcnn-weights.ts
       solution/
 
-    19-video-frame-input/
+    19-fsrcnn-super-resolution/
+      README.md
+      exercise.md
+      index.html
+      src/
+        main.ts
+      shaders/
+        fsrcnn-extract-5x5.wgsl
+        fsrcnn-shrink-1x1.wgsl
+        fsrcnn-map-3x3.wgsl
+        fsrcnn-expand-1x1.wgsl
+        fsrcnn-deconv-9x9.wgsl
+      model/
+        fsrcnn-weights.ts
+      solution/
+
+    20-video-frame-input/
       README.md
       exercise.md
       index.html
@@ -735,7 +773,7 @@ gpgpu-tutorial/
         copy-frame.wgsl
       solution/
 
-    20-request-video-frame-callback/
+    21-request-video-frame-callback/
       README.md
       exercise.md
       index.html
@@ -745,20 +783,16 @@ gpgpu-tutorial/
         copy-frame.wgsl
       solution/
 
-    21-realtime-sr-player/
+    22-realtime-sr-player/
       README.md
       exercise.md
       index.html
       src/
         main.ts
-      shaders/
-        bilinear-upscale.wgsl
-        conv-rgb-to-features.wgsl
-        conv-features.wgsl
-        conv-features-to-rgb.wgsl
-        compose-residual.wgsl
+      shaders/         # 18·19장의 SRCNN/FSRCNN 셰이더 재사용
       model/
-        weights.ts
+        srcnn-weights.ts
+        fsrcnn-weights.ts
       solution/
 
     optional/
@@ -768,17 +802,22 @@ gpgpu-tutorial/
       O2-nn-and-training-basics/
         README.md
         exercise.md
-      O3-train-tiny-sr/
+      O3-train-srcnn-fsrcnn/
         README.md
         exercise.md
-        train.py
-        export-checkpoint.py
+        train_srcnn.py
+        train_fsrcnn.py
+        export_checkpoint.py
       O4-gan-sr-overview/
         README.md
 
   model/
-    tiny-sr.checkpoint
+    srcnn.checkpoint
+    fsrcnn.checkpoint
     architecture.md
+
+  # Python 가상환경 (uv 로 생성, git 제외). 옵셔널 트랙 학습에만 필요.
+  .venv/
 
   public/
     images/
@@ -816,7 +855,7 @@ gpgpu-tutorial/
 - `lessons/*/solution/`: 실습 후 비교할 수 있는 정답 코드
 - `lessons/*/shaders/`: 해당 챕터에서 사용하는 WGSL shader
 - `lessons/*/model/`: 해당 챕터에서 사용하는 weight, bias (`make:weights`로 생성)
-- `model/`: 미리 학습된 기본 checkpoint와 아키텍처 스펙. 메인↔옵셔널 트랙의 계약 기준
+- `model/`: 미리 학습된 SRCNN/FSRCNN checkpoint와 아키텍처 스펙(`architecture.md`). 메인↔옵셔널 트랙의 계약 기준
 - `public/`: 모든 예제에서 공유하는 이미지와 비디오 샘플
 - `scripts/`: lesson 생성, 지원 환경 확인, weight 생성(`make-weights.ts`) 같은 보조 스크립트
 - `tests/`: CPU 기준 구현과 핵심 수학 로직 테스트
@@ -913,16 +952,21 @@ bun test               # tests/cpu/*.test.ts 실행
 
 ### 옵셔널 트랙 (PyTorch)
 
-옵셔널 트랙에서 weight를 직접 학습하려면 Python과 PyTorch가 필요합니다. 자세한 설치와 실행은 `lessons/optional/O1-pytorch-setup/README.md`에 있습니다. 학습한 결과를 메인 트랙에 반영하는 흐름은 다음과 같습니다.
+옵셔널 트랙에서 weight를 직접 학습하려면 Python과 PyTorch가 필요합니다. 이 저장소는 시스템 Python을 건드리지 않도록 **`uv`로 만든 가상환경(`.venv`)**을 사용합니다. 자세한 설치와 실행은 `lessons/optional/O1-pytorch-setup/README.md`에 있습니다.
 
 ```bash
-# 옵셔널 트랙에서 학습 후
-python lessons/optional/O3-train-tiny-sr/train.py            # tiny SR 모델 학습
-python lessons/optional/O3-train-tiny-sr/export-checkpoint.py  # model/tiny-sr.checkpoint 로 저장
-bun run make:weights                                        # 내가 학습한 weight를 메인 레슨에 연결
+# 가상환경 준비 (처음 한 번)
+uv venv --python 3.12 .venv
+VIRTUAL_ENV=.venv uv pip install torch numpy pillow
+
+# 학습 후 메인 트랙에 반영
+.venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py     # SRCNN 학습
+.venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_fsrcnn.py    # FSRCNN 학습
+.venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/export_checkpoint.py  # model/*.checkpoint 저장
+bun run make:weights                                                      # weight 를 메인 레슨에 연결
 ```
 
-이후 메인 트랙의 CNN SR 데모를 다시 열면 직접 학습한 모델로 동작합니다.
+이후 메인 트랙의 CNN SR 데모(18·19장)를 다시 열면 직접 학습한 모델로 동작합니다.
 
 ### 자주 막히는 지점
 

@@ -20,3 +20,8 @@
 | feature map | conv layer 의 출력 채널들. 각 채널이 한 종류의 특징 |
 | residual | 기본 결과에 더하는 보정값 |
 | luma | 색의 밝기 성분. RGB 와 가중치 벡터의 내적 |
+| SRCNN | 최초의 CNN 기반 SR(2014). 먼저 확대한 뒤 conv 3개(9x9/1x1/5x5)로 복원 |
+| FSRCNN | 빠른 SRCNN(2016). LR 에서 처리하고 마지막에 deconvolution 으로 확대 |
+| deconvolution (transposed conv) | 학습된 가중치로 해상도를 키우는 conv. FSRCNN 의 확대 단계 |
+| checkerboard artifact | deconvolution 에서 생기는 격자 무늬 결함 |
+| PReLU | 음수 영역에 작은 기울기를 두는 ReLU 변형. FSRCNN 원논문이 사용 |
