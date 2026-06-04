@@ -141,6 +141,8 @@ export class CnnRunner {
   private deconvPipeline: GPUComputePipeline;
   private rgbPipeline: GPUComputePipeline;
   private featPipeline: GPUComputePipeline;
+  // dims/params uniform 버퍼 캐시. 같은 값이면 재사용해 매 프레임 할당을 막는다(22장 실시간 핫패스).
+  private uniformCache = new Map<string, GPUBuffer>();
 
   constructor(private device: GPUDevice) {
     const make = (code: string) =>
@@ -158,6 +160,16 @@ export class CnnRunner {
     pass.dispatchWorkgroups(Math.ceil(width / 8), Math.ceil(height / 8));
   }
 
+  /** 같은 key 의 uniform 버퍼를 재사용한다(값이 고정인 dims/params 가 매 프레임 재할당되지 않게). */
+  private uniform(key: string, data: Uint32Array | Int32Array): GPUBuffer {
+    let buf = this.uniformCache.get(key);
+    if (!buf) {
+      buf = createUniformBuffer(this.device, data);
+      this.uniformCache.set(key, buf);
+    }
+    return buf;
+  }
+
   /** RGB 텍스처 -> 3채널 feature buffer. */
   rgbToFeatures(
     encoder: GPUCommandEncoder,
@@ -166,7 +178,7 @@ export class CnnRunner {
     width: number,
     height: number,
   ): void {
-    const dims = createUniformBuffer(this.device, new Uint32Array([width, height, 0, 0]));
+    const dims = this.uniform(`rgb:${width}x${height}`, new Uint32Array([width, height, 0, 0]));
     const bg = this.device.createBindGroup({
       layout: this.rgbPipeline.getBindGroupLayout(0),
       entries: [
@@ -249,8 +261,8 @@ export class CnnRunner {
     channels: number,
     selChannel = -1,
   ): void {
-    const params = createUniformBuffer(
-      this.device,
+    const params = this.uniform(
+      `feat:${width}x${height}x${channels}:${selChannel}`,
       new Int32Array([width, height, channels, selChannel]),
     );
     const bg = this.device.createBindGroup({

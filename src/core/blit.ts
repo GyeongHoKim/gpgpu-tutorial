@@ -10,6 +10,8 @@ import blitShader from "./shaders/blit.wgsl" with { type: "text" };
 export class Blitter {
   private pipeline: GPURenderPipeline;
   private sampler: GPUSampler;
+  // 같은 텍스처면 bind group 을 재사용한다(매 프레임 blit 시 할당을 막음 — 22장 실시간).
+  private bindGroups = new WeakMap<GPUTexture, GPUBindGroup>();
 
   constructor(
     private device: GPUDevice,
@@ -31,13 +33,17 @@ export class Blitter {
   /** texture 를 context 의 현재 프레임에 그린다. */
   blit(context: GPUCanvasContext, texture: GPUTexture): void {
     const view = context.getCurrentTexture().createView();
-    const bindGroup = this.device.createBindGroup({
-      layout: this.pipeline.getBindGroupLayout(0),
-      entries: [
-        { binding: 0, resource: texture.createView() },
-        { binding: 1, resource: this.sampler },
-      ],
-    });
+    let bindGroup = this.bindGroups.get(texture);
+    if (!bindGroup) {
+      bindGroup = this.device.createBindGroup({
+        layout: this.pipeline.getBindGroupLayout(0),
+        entries: [
+          { binding: 0, resource: texture.createView() },
+          { binding: 1, resource: this.sampler },
+        ],
+      });
+      this.bindGroups.set(texture, bindGroup);
+    }
 
     const encoder = this.device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
