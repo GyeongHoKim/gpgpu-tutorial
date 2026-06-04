@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>21. requestVideoFrameCallback 통합</title>
+    <style>
+      figure figcaption { color: #9ca3af; }
+      /* 재생/일시정지/seek 컨트롤 묶음 */
+      .player-controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        font: 13px system-ui, sans-serif;
+        color: #e5e7eb;
+      }
+      .player-controls button {
+        font: 13px system-ui, sans-serif;
+        color: #e5e7eb;
+        background: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        padding: 6px 14px;
+        cursor: pointer;
+      }
+      .player-controls button:hover { background: #374151; }
+      .player-controls input[type="range"] { width: 220px; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="21. requestVideoFrameCallback 통합">
+      <span slot="desc">
+        20장의 비디오 처리를 requestVideoFrameCallback 으로 옮겨, 새 비디오 프레임마다 정확히
+        한 번씩 GPU 필터를 돌립니다. 재생/일시정지/seek 와 프레임 스킵까지 다룹니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력 &lt;video&gt;</figcaption>
+          <!-- muted + playsinline 이라야 자동재생 정책에 막히지 않는다. controls 는 끄고
+               우리 버튼으로 제어한다. src 는 번들러가 빌드 자산으로 해석하지 않도록
+               main.ts 에서 런타임에 지정한다(개발 서버가 /videos/ 를 서빙). -->
+          <video
+            id="video"
+            width="320"
+            height="180"
+            muted
+            playsinline
+            loop
+          ></video>
+        </figure>
+        <figure>
+          <figcaption>GPU 출력 (프레임 단위 처리)</figcaption>
+          <canvas id="gpu" width="320" height="180"></canvas>
+        </figure>
+      </split-view>
+
+      <div slot="controls" class="player-controls">
+        <button id="play">재생</button>
+        <button id="pause">일시정지</button>
+        <label>
+          seek
+          <input id="seek" type="range" min="0" max="1000" value="0" step="1" />
+        </label>
+      </div>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>20. 정지 이미지에서 비디오 프레임으로</title>
+    <style>
+      figure figcaption { color: #9ca3af; }
+      /* <video> 는 입력(소스)일 뿐이라 작게 보여준다. 실제로는 숨겨도 된다. */
+      video { background: #111827; border: 1px solid #1f2937; border-radius: 6px; }
+      button { font: 13px system-ui, sans-serif; color: #e5e7eb; background: #1f2937;
+               border: 1px solid #374151; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+      button:hover { background: #374151; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="20. 정지 이미지에서 비디오 프레임으로">
+      <span slot="desc">
+        13장에서 정지 이미지로 하던 GPU grayscale 을 매 프레임 갱신되는 &lt;video&gt; 프레임으로 확장합니다.
+        텍스처·파이프라인은 한 번만 만들고 재사용합니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>입력 &lt;video&gt; (소스)</figcaption>
+          <!-- muted + autoplay 라야 사용자 클릭 없이 자동재생된다. crossorigin 으로 CORS 처리.
+               src 는 main.ts 에서 "/videos/sample.mp4" 로 지정한다.
+               (정적 빌드 시 HTML 의 src 속성을 번들러가 자산으로 해석하지 않도록 JS 에서 넣는다) -->
+          <video
+            id="video"
+            data-src="/videos/sample.mp4"
+            width="320"
+            height="240"
+            autoplay
+            loop
+            muted
+            playsinline
+            crossorigin
+          ></video>
+        </figure>
+        <figure>
+          <figcaption>GPU 출력 &lt;canvas&gt; (결과)</figcaption>
+          <canvas id="gpu" width="320" height="240"></canvas>
+        </figure>
+      </split-view>
+
+      <div slot="controls">
+        <button id="toggle">필터: 켜짐 (grayscale)</button>
+      </div>
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

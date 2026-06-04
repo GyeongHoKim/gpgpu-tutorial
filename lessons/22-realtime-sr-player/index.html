@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>22. 실시간 Super Resolution 데모</title>
+    <style>
+      figure figcaption { color: #9ca3af; }
+      /* 숨겨 두는 <video>: 디코딩만 하고 화면엔 직접 안 보인다(프레임은 GPU 텍스처로 간다). */
+      #video { display: none; }
+      /* 두 결과 캔버스는 같은 640×480 출력을 같은 크기로 나란히 비교한다. */
+      #bilinear, #sr { width: 480px; height: 360px; image-rendering: auto; }
+      /* 컨트롤 묶음 — 공통 UI 가 없는 간단한 토글이라 light DOM 에 직접 둔다. */
+      .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+             color: #e5e7eb; font: 13px system-ui, sans-serif; }
+      .ctl button, .ctl select {
+        background: #1f2937; color: #e5e7eb; border: 1px solid #374151;
+        border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer;
+      }
+      .ctl button[aria-pressed="true"] { background: #2563eb; border-color: #3b82f6; }
+      .ctl label { color: #9ca3af; }
+    </style>
+  </head>
+  <body style="margin: 0; background: #0b0f1a">
+    <lesson-shell title="22. 실시간 Super Resolution 데모 (캡스톤)">
+      <span slot="desc">
+        <code>&lt;video&gt;</code> 의 매 프레임을 GPU 텍스처로 받아, 선택한 모델(SRCNN/FSRCNN)로
+        실시간 Super Resolution 추론을 돌립니다. 왼쪽은 <b>bilinear 확대</b>, 오른쪽은 <b>SR 결과</b>를
+        나란히 비교합니다. 18·19장의 SR 파이프라인을 21장의 비디오 프레임 루프(rVFC)에 연결한
+        <b>메인 트랙 캡스톤</b>입니다.
+      </span>
+
+      <split-view slot="stage">
+        <figure>
+          <figcaption>bilinear 확대 (640×480)</figcaption>
+          <canvas id="bilinear" width="640" height="480"></canvas>
+        </figure>
+        <figure>
+          <figcaption>SR 결과 (640×480)</figcaption>
+          <canvas id="sr" width="640" height="480"></canvas>
+        </figure>
+      </split-view>
+
+      <div slot="controls" class="ctl">
+        <button id="playPause" type="button">⏸ 일시정지</button>
+        <label for="model">모델</label>
+        <select id="model">
+          <option value="srcnn">SRCNN (먼저 확대 후 처리)</option>
+          <option value="fsrcnn">FSRCNN (LR 처리 후 확대 — 보통 빠름)</option>
+        </select>
+        <button id="srToggle" type="button" aria-pressed="true">SR: ON</button>
+      </div>
+
+      <stats-panel id="stats" slot="controls"></stats-panel>
+    </lesson-shell>
+
+    <!-- 숨겨 둔 디코더용 <video>. muted/autoplay/loop/playsinline 이라야 자동 재생된다.
+         src 는 JS(main.ts)에서 /videos/sample.mp4 로 설정한다(번들러가 정적 에셋으로 오해하지 않게). -->
+    <video id="video" muted autoplay loop playsinline></video>
+
+    <!-- 실습용 골격. 완성본은 solution/main.ts 와 비교하세요. -->
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

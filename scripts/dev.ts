@@ -20,6 +20,9 @@ import lesson15 from "../lessons/15-gpu-convolution/index.html";
 import lesson17 from "../lessons/17-single-cnn-layer/index.html";
 import lesson18 from "../lessons/18-srcnn-super-resolution/index.html";
 import lesson19 from "../lessons/19-fsrcnn-super-resolution/index.html";
+import lesson20 from "../lessons/20-video-frame-input/index.html";
+import lesson21 from "../lessons/21-request-video-frame-callback/index.html";
+import lesson22 from "../lessons/22-realtime-sr-player/index.html";
 
 // 개념 챕터(01, 02)는 실행 코드가 없어 등록하지 않는다 (README 만 존재).
 const lessons: Record<string, unknown> = {
@@ -39,6 +42,9 @@ const lessons: Record<string, unknown> = {
   "17": lesson17,
   "18": lesson18,
   "19": lesson19,
+  "20": lesson20,
+  "21": lesson21,
+  "22": lesson22,
 };
 
 // 레지스트리 키는 2자리("04")다. "4" 처럼 1자리로 넘겨도 동작하도록 정규화한다.
@@ -54,6 +60,15 @@ const server = Bun.serve({
   development: true,
   // HTML 라우트. Bun 이 <script type="module"> 와 WGSL import 를 번들링한다.
   routes: { "/": html as never },
+  // public/ 정적 에셋(비디오 챕터의 /videos/sample.mp4 등) 서빙 fallback.
+  async fetch(req) {
+    const { pathname } = new URL(req.url);
+    if (pathname.startsWith("/videos/") || pathname.startsWith("/images/")) {
+      const file = Bun.file(`public${pathname}`);
+      if (await file.exists()) return new Response(file);
+    }
+    return new Response("Not found", { status: 404 });
+  },
 });
 
 console.log(`개발 서버: http://localhost:${server.port}  (lesson ${arg})`);
