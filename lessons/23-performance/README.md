@@ -284,7 +284,7 @@ flowchart TD
 
 같은 2배 확대인데 FSRCNN의 일량이 **약 3.3배 적습니다.** "느린 작업을 더 빨리"가 아니라 **"비싼 해상도에서 일을 덜 하게 구조를 바꾼" 최적화**입니다 — 22장이 두 모델을 셀렉트로 전환하게 둔 것은, GPU 시간을 재며 예산에 맞는 쪽을 고르라는 실습이기도 합니다.
 
-> 주의(timestamp-query 가용성): GPU 시간 측정(`measureGpuMs`, `src/core/gpu-timer.ts`)은 `"timestamp-query"` feature에 의존합니다. 이 feature는 일부 브라우저·디바이스에서 **지원되지 않거나 꺼져** 있을 수 있고(보안·정밀도 이유로 비활성인 환경도 있음), `requestDevice` 시 `requiredFeatures`로 요청해야 합니다. 지원되지 않으면 `gpuMs`가 0이거나 측정 불가가 됩니다 — 이때는 `performance.now()`로 제출~완료(`onSubmittedWorkDone`) 구간을 재는 등 **대체 측정**으로 폴백하세요. 측정값을 맹신하기 전에 feature 지원 여부부터 확인하는 습관이 중요합니다.
+> 주의(측정 방식과 한계): 이 저장소의 GPU 시간 측정(`measureGpuMs`, `src/core/gpu-timer.ts`)은 `timestamp-query` 같은 정밀 GPU 타이머를 쓰지 **않습니다.** 대신 작업을 제출하고 `device.queue.onSubmittedWorkDone()`이 끝날 때까지 기다린 **wall-clock 시간**(`performance.now()` 차이)을 잽니다. 어디서나 동작하지만 제출·동기화 오버헤드가 포함된 **근사치**이고, `onSubmittedWorkDone` 대기 때문에 매 프레임 GPU·CPU가 동기화되는 점도 감안하세요. 더 정밀하게 재려면 `timestamp-query` feature(브라우저·디바이스에 따라 미지원/비활성일 수 있어 `requestDevice` 시 `requiredFeatures: ["timestamp-query"]`로 요청)로 GPU 내부 타임스탬프를 읽어야 하지만, 이 튜토리얼은 가용성을 위해 wall-clock 폴백을 택했습니다.
 
 ## 완성되면 이런 화면
 
