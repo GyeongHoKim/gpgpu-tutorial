@@ -14,6 +14,7 @@ bun run dev 13      # 13장 개발 서버 (http://localhost:5173)
 - WebGPU 지원 브라우저(Chrome/Edge 최신 등)로 엽니다. 챕터는 `bun run dev <번호>`로 실행합니다.
 - 실습: 챕터 README로 개념을 읽고 → `src/`의 TODO를 채우고 → 브라우저로 확인 → `solution/`과 비교.
 - 테스트: `bun test` (CPU 기준 구현 검증).
+- 비디오 챕터(20~22)는 샘플 영상 `public/videos/sample.mp4`(저장소 포함)를 씁니다. 다시 만들려면 `bun run make:video`(ffmpeg 필요).
 
 ## 스택 · 구조
 

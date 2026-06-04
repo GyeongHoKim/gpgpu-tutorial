@@ -8,6 +8,7 @@
     "test": "bun test",
     "check:webgpu": "bun run scripts/check-webgpu-support.ts",
     "make:weights": "bun run scripts/make-weights.ts",
+    "make:video": "bash scripts/make-sample-video.sh",
     "create-lesson": "bun run scripts/create-lesson.ts"
   },
   "devDependencies": {
