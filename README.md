@@ -67,12 +67,16 @@ bun run dev 13      # 13장 개발 서버 (http://localhost:5173)
 - [21. requestVideoFrameCallback 통합](./lessons/21-request-video-frame-callback/README.md)
 - [22. 실시간 Super Resolution 데모 (캡스톤)](./lessons/22-realtime-sr-player/README.md)
 
-**Part 8. 실무 감각** _(작성 예정)_
-- 23 성능 최적화, 24 디버깅, 25 회사 플레이어로 가기 전에
+**Part 8. 실무 감각**
+- [23. 성능 최적화 기초](./lessons/23-performance/README.md)
+- [24. 디버깅 방법](./lessons/24-debugging/README.md) · 참조: [`docs/webgpu-debugging.md`](./docs/webgpu-debugging.md)
+- [25. 회사 비디오 플레이어로 가기 전에](./lessons/25-company-player/README.md)
 
 **옵셔널 트랙 (PyTorch)**
+- [O1. PyTorch 환경과 기초](./lessons/optional/O1-pytorch-setup/README.md)
+- [O2. 신경망 학습 기초](./lessons/optional/O2-nn-and-training-basics/README.md)
 - [O3. SRCNN/FSRCNN 학습하기](./lessons/optional/O3-train-srcnn-fsrcnn/README.md)
-- O1 PyTorch 기초, O2 신경망 학습 기초, O4 GAN 기반 SR 개요 _(작성 예정)_
+- [O4. GAN 기반 Super Resolution 개요](./lessons/optional/O4-gan-sr-overview/README.md)
 
 ## 최종 목표
 
