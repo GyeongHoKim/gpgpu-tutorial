@@ -20,3 +20,4 @@ curl -L -o docs/assets/external/conv.gif "<wikimedia-file-url>"
 
 - `external/2d-convolution-animation.gif` — Author: Michael Plotke, Source: https://commons.wikimedia.org/wiki/File:2D_Convolution_Animation.gif, License: CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/) — 원본을 가공하지 말 것 (5장 convolution 슬라이딩 애니메이션)
 - `external/cnn-3-filters.gif` — Author: Cecbur, Source: https://commons.wikimedia.org/wiki/File:3_filters_in_a_Convolutional_Neural_Network.gif, License: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/) — 원본을 가공하지 말 것 (16장: filter 3개가 입력을 읽어 feature map 3개를 만드는 conv layer)
+- `external/ycbcr-separation.jpg` — Author: Mike1024, Source: https://commons.wikimedia.org/wiki/File:Barns_grand_tetons_YCbCr_separation.jpg, License: Public domain (저작권자가 퍼블릭 도메인으로 공개) (25장: 한 사진을 Y(luma)·Cb·Cr 채널로 분리 — Y 가 13장 grayscale luma 와 같음을 보임)
