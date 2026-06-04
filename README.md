@@ -61,8 +61,13 @@ bun run dev 13      # 13장 개발 서버 (http://localhost:5173)
 - [18. SRCNN Super Resolution](./lessons/18-srcnn-super-resolution/README.md)
 - [19. FSRCNN Super Resolution](./lessons/19-fsrcnn-super-resolution/README.md)
 
-**Part 7~8. 비디오 플레이어 · 실무** _(작성 예정)_
-- 20~22 비디오 프레임 연결·실시간 SR 데모, 23~25 성능·디버깅·실무 제약
+**Part 7. 비디오 플레이어 연결**
+- [20. 정지 이미지에서 비디오 프레임으로](./lessons/20-video-frame-input/README.md)
+- [21. requestVideoFrameCallback 통합](./lessons/21-request-video-frame-callback/README.md)
+- [22. 실시간 Super Resolution 데모 (캡스톤)](./lessons/22-realtime-sr-player/README.md)
+
+**Part 8. 실무 감각** _(작성 예정)_
+- 23 성능 최적화, 24 디버깅, 25 회사 플레이어로 가기 전에
 
 **옵셔널 트랙 (PyTorch)**
 - [O3. SRCNN/FSRCNN 학습하기](./lessons/optional/O3-train-srcnn-fsrcnn/README.md)
