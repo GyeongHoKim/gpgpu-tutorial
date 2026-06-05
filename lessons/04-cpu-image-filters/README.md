@@ -98,6 +98,37 @@ brightness 는 `src/math` 에 아직 없으므로 이 챕터에서 **lesson 로�
 
 bilinear 는 출력 픽셀 중심을 원본 좌표로 역산한 뒤, 그 좌표를 둘러싼 **4개 픽셀**을 거리에 따라 섞습니다. 먼저 출력 픽셀 중심 $(x+0.5, y+0.5)$ 를 원본 좌표로 되돌립니다.
 
+3장에서 배웠던 UV 좌표 변환을 떠올려 봅시다.
+
+**원본 픽셀 $i$ → 출력 픽셀 $j$**
+
+픽셀은 점이 아니라 작은 사각형입니다. 인덱스 $i$ 인 픽셀의 **중심**은 좌표 $i + 0.5$ 에 있습니다. 두 이미지가 같은 물리적 영역을 덮는다고 보면, 원본 픽셀 중심을 정규화(0~1) 좌표로 변환한 뒤, 출력 이미지 크기로 다시 스케일합니다.
+
+```math
+\underbrace{\frac{i + 0.5}{W_{\text{src}}}}_{\text{정규화 }u}
+\times W_{\text{out}}
+= \frac{i + 0.5}{W_{\text{src}}} \times W_{\text{src}} \cdot s
+= (i + 0.5)\, s
+```
+
+출력 픽셀 $j$ 의 중심도 $j + 0.5$ 이므로
+
+```math
+j + 0.5 = (i + 0.5)\, s \quad \Longrightarrow \quad j = (i + 0.5)\, s - 0.5
+```
+
+**출력 픽셀 $x$ → 원본 좌표 $x_{\text{src}}$**
+
+본론으로 돌아와, 원본좌표를 구하기 위해 위 식을 $i$ 에 대해 풀면
+
+```math
+x + 0.5 = (x_{\text{src}} + 0.5)\, s
+\quad \Longrightarrow \quad
+x_{\text{src}} = \frac{x + 0.5}{s} - 0.5
+```
+
+> 주의: $s = 2$, 출력 첫 번째 픽셀($x = 0$)을 대입하면 $x_{\text{src}} = -0.25$ 로 음수가 나옵니다. 출력 이미지의 가장자리 픽셀 중심이 원본 이미지의 첫 픽셀 중심보다 **왼쪽**에 있기 때문입니다. 구현에서는 이 경우 원본 경계 픽셀값으로 clamp 합니다.
+
 ```math
 x_{\text{src}} = \frac{x + 0.5}{s} - 0.5, \qquad
 y_{\text{src}} = \frac{y + 0.5}{s} - 0.5
@@ -133,16 +164,43 @@ y1  v01 ───────── v11
 
 입니다. 이는 선형대수에서 배운 **선형결합** $\alpha\, a + \beta\, b$ 의 특수한 경우로, 계수가 $\alpha = 1 - t$, $\beta = t$ 이고 **합이 1** 입니다($\alpha + \beta = 1$). 계수 합이 1인 선형결합을 **affine combination(가중 평균)** 이라 부르고, 그래서 결과가 항상 $a$ 와 $b$ "사이"에 놓입니다.
 
-bilinear 는 이 1차 보간을 **세 번** 한 것뿐입니다(가로 2번 + 세로 1번). 위 세 식을 한 줄로 펼치면 네 픽셀의 가중 평균, 즉 길이 4 벡터 $\mathbf{v} = (v_{00}, v_{10}, v_{01}, v_{11})$ 과 가중치 벡터 $\mathbf{w}$ 의 **내적**이 됩니다.
+bilinear 는 이 1차 보간을 **세 번** 한 것뿐입니다(가로 2번 + 세로 1번). 위 세 식을 순서대로 대입해 전개하면 내적이 나옵니다.
+
+**1단계: top, bot 을 out 에 대입**
 
 ```math
-\mathrm{out} = \langle \mathbf{w},\ \mathbf{v} \rangle, \quad
-\mathbf{w} = \begin{bmatrix}
-(1-t_x)(1-t_y) \\ t_x(1-t_y) \\ (1-t_x)\,t_y \\ t_x\,t_y
-\end{bmatrix}
+\mathrm{out} = (1 - t_y)\,\mathrm{top} + t_y\,\mathrm{bot}
+= (1-t_y)\bigl[(1-t_x)\,v_{00} + t_x\,v_{10}\bigr]
++ t_y\bigl[(1-t_x)\,v_{01} + t_x\,v_{11}\bigr]
 ```
 
-네 가중치의 합도 $1$ 입니다($(1-t_x)(1-t_y) + t_x(1-t_y) + (1-t_x)t_y + t_x t_y = 1$). 즉 bilinear 는 **"가까운 픽셀일수록 더 크게 쳐주는 가중 평균"** 이고, 이게 13장 grayscale 의 내적, 그리고 5장 convolution 의 내적과 정확히 같은 수학입니다. 새로운 개념이 아니라, **이미 아는 내적/선형결합의 또 다른 옷**입니다.
+**2단계: 괄호 전개**
+
+```math
+= (1-t_y)(1-t_x)\,v_{00}
++ (1-t_y)\,t_x\,v_{10}
++ t_y(1-t_x)\,v_{01}
++ t_y\,t_x\,v_{11}
+```
+
+**3단계: 내적 형태로 묶기**
+
+각 $v$ 앞의 계수를 가중치 벡터 $\mathbf{w}$, 픽셀값을 $\mathbf{v}$ 로 묶으면
+
+```math
+\mathrm{out} = \langle \mathbf{w},\ \mathbf{v} \rangle, \qquad
+\mathbf{w} = \begin{bmatrix}(1-t_x)(1-t_y) \\ t_x(1-t_y) \\ (1-t_x)\,t_y \\ t_x\,t_y\end{bmatrix}, \qquad
+\mathbf{v} = \begin{bmatrix}v_{00} \\ v_{10} \\ v_{01} \\ v_{11}\end{bmatrix}
+```
+
+네 가중치의 합은 항상 $1$ 입니다.
+
+```math
+(1-t_x)(1-t_y) + t_x(1-t_y) + (1-t_x)\,t_y + t_x\,t_y
+= (1-t_y)\underbrace{[(1-t_x)+t_x]}_{1} + t_y\underbrace{[(1-t_x)+t_x]}_{1} = 1
+```
+
+즉 bilinear 는 **"가까운 픽셀일수록 더 크게 쳐주는 가중 평균"** 이고, 이게 13장 grayscale 의 내적, 그리고 5장 convolution 의 내적과 정확히 같은 수학입니다. 새로운 개념이 아니라, **이미 아는 내적/선형결합의 또 다른 옷**입니다.
 
 #### nearest vs bilinear, 눈으로 보면
 
