@@ -39,7 +39,7 @@ def layer_dict(name: str, module, ttype: str) -> dict:
 
 def export_srcnn() -> dict:
     m = SRCNN()
-    m.load_state_dict(torch.load("model/srcnn.pt", map_location="cpu"))
+    m.load_state_dict(torch.load("model/srcnn.pt", map_location="cpu", weights_only=True))
     m.eval()
     return {
         "model": "srcnn",
@@ -55,7 +55,7 @@ def export_srcnn() -> dict:
 
 def export_fsrcnn() -> dict:
     m = FSRCNN()
-    m.load_state_dict(torch.load("model/fsrcnn.pt", map_location="cpu"))
+    m.load_state_dict(torch.load("model/fsrcnn.pt", map_location="cpu", weights_only=True))
     m.eval()
     return {
         "model": "fsrcnn",

@@ -1,6 +1,6 @@
 """FSRCNN 학습. 입력은 LR (확대 안 함), 모델이 deconv 로 2x 확대. 목표는 HR.
 
-실행: .venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_fsrcnn.py
+실행: uv run lessons/optional/O3-train-srcnn-fsrcnn/train_fsrcnn.py
 환경변수: DIV2K_HR(기본 data/div2k/DIV2K_valid_HR), EPOCHS, BATCH
 """
 import os
@@ -23,12 +23,19 @@ ITERS = int(os.environ.get("ITERS", "500"))  # epoch 당 배치 수
 OUT = "model/fsrcnn.pt"
 
 
-def pick_device() -> str:
-    if torch.backends.mps.is_available():
-        return "mps"
-    if torch.cuda.is_available():
-        return "cuda"
-    return "cpu"
+def pick_device() -> torch.device:
+    """학습에 쓸 디바이스를 고른다.
+
+    torch.accelerator (PyTorch 2.6+) 는 cuda/mps/xpu 같은 가속기를 하나의 API 로
+    다룬다. 예전처럼 torch.cuda.is_available() / torch.backends.mps.is_available()
+    를 손으로 나열하지 않아도 되고, 새 가속기가 늘어도 이 코드는 그대로다.
+    가속기가 없으면(CPU 전용 환경) cpu 로 떨어진다.
+    """
+    if torch.accelerator.is_available():
+        dev = torch.accelerator.current_accelerator()
+        if dev is not None:
+            return dev
+    return torch.device("cpu")
 
 
 def main() -> None:
