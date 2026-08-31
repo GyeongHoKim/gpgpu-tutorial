@@ -1,0 +1,58 @@
+# 옵셔널 트랙(lessons/optional/) 전용 Python 프로젝트 정의.
+#
+# 메인 트랙(lessons/01~25)은 Bun 과 TypeScript 만 쓰므로 이 파일이 필요 없다.
+# SR 모델을 직접 학습해 weight 를 만들 때(O1~O3)만 쓴다.
+#
+# 사용법 (OS 공통):
+#   uv sync                                  # uv.lock 에 잠긴 버전 그대로 설치
+#   uv run lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py
+#
+# uv run 을 쓰면 .venv 경로를 직접 쓸 일이 없다. Windows 의 .venv\Scripts 와
+# macOS/Linux 의 .venv/bin 차이를 신경 쓰지 않아도 되므로 명령이 하나로 통일된다.
+
+[project]
+name = "gpgpu-tutorial-training"
+version = "0.1.0"
+description = "SRCNN/FSRCNN 학습 스크립트 (메인 트랙 weight 생성용)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "torch>=2.6",
+  "numpy>=2.0",
+  "pillow>=11.0",
+]
+
+# 학습 스크립트는 패키지가 아니라 그냥 실행 스크립트다.
+# 빌드/설치 대상이 없음을 알려 uv sync 가 이 프로젝트 자체를 설치하려 들지 않게 한다.
+[tool.uv]
+package = false
+
+# torch 는 PyPI 기본 wheel 대신 PyTorch 공식 인덱스에서 받는다.
+# 어떤 백엔드(cpu/cuda)가 깔릴지 명시적으로 통제하기 위해서다.
+#
+# - Windows·Linux: CUDA 빌드. NVIDIA GPU 가 있으면 학습이 훨씬 빠르다.
+#   GPU 가 없어도 이 빌드는 그대로 설치되고 CPU 로 동작한다(용량만 크다).
+# - macOS: CPU 빌드. PyTorch 는 macOS 용 CUDA 빌드를 아예 만들지 않는다.
+#   Apple Silicon 의 mps 가속은 이 CPU wheel 안에 함께 들어 있다.
+#
+# NVIDIA GPU 가 없는 Windows·Linux 에서 2GB 넘는 CUDA wheel 을 받고 싶지 않다면,
+# 아래 marker 의 'win32' 를 지워 CPU 인덱스로 보내면 된다.
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
+  { index = "pytorch-cu126", marker = "sys_platform != 'darwin'" },
+]
+
+# explicit = true 는 "이 인덱스는 여기 명시된 패키지에만 쓴다" 는 뜻이다.
+# numpy·pillow 같은 일반 의존성은 그대로 PyPI 에서 받는다.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+# CUDA 12.6 라인을 쓴다. 최신 cu130 도 같은 torch 버전을 제공하지만,
+# CUDA 13 은 Maxwell·Pascal·Volta 세대 GPU 지원을 끊었다. 사내 장비가 제각각일
+# 수 있으므로 더 넓은 GPU 세대를 덮는 cu126 을 기본값으로 둔다.
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
