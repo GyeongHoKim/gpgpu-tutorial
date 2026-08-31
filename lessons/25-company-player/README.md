@@ -145,10 +145,11 @@ flowchart TD
 
 ### 5. 브라우저 지원 범위와 모바일 GPU 편차
 
-WebGPU 는 비교적 최신 API 입니다. 제품은 데모와 달리 "내 Chrome 하나"가 아니라 **고객의 다양한 환경**에서 돌아야 합니다.
+WebGPU 는 2026년 1월에 **Baseline** 에 도달해서, 이제는 "쓸 수 있느냐"보다 **"어디까지 균일하게 도느냐"** 가 실무의 쟁점입니다. 제품은 데모와 달리 "내 Chrome 하나"가 아니라 **고객의 다양한 환경**에서 돌아야 합니다.
 
-- **지원 범위**: WebGPU 미지원 브라우저/버전이 아직 있습니다. `navigator.gpu` 가 없거나 `requestAdapter()` 가 `null` 이면, 친절히 안내하거나 **WebGL/CPU 폴백** 또는 SR 끄기로 떨어져야 합니다. "지원하면 SR, 아니면 원본 재생"처럼.
+- **지원 범위**: Chrome/Edge 113+, Safari 26+, Firefox 141+(Windows) 에서 동작합니다. 남은 공백은 **Linux 의 Firefox** 와 **오래된 모바일 기기**, 그리고 사내 단말처럼 **업데이트가 늦은 환경**입니다. `navigator.gpu` 가 없거나 `requestAdapter()` 가 `null` 이면, 친절히 안내하거나 **WebGL/CPU 폴백** 또는 SR 끄기로 떨어져야 합니다. "지원하면 SR, 아니면 원본 재생"처럼.
 - **한계(limits) 차이**: 기기마다 `maxComputeWorkgroupSizeX`, `maxStorageBufferBindingSize`, `maxTextureDimension2D` 등이 다릅니다. 데스크톱에서 되던 `@workgroup_size`·버퍼 크기가 모바일에서 한계를 넘을 수 있습니다. 어댑터의 `limits` 를 읽어 맞춰야 합니다.
+- **선택 기능(optional feature) 편차**: `subgroups`, `shader-f16`, `timestamp-query` 같은 기능은 **브라우저마다, 그리고 같은 브라우저라도 기기마다** 있을 수도 없을 수도 있습니다. 예를 들어 `subgroups` 는 현재 Chrome 계열 전용입니다. `adapter.features.has(...)` 로 확인하고, 없으면 기본 경로로 떨어지도록 두 갈래를 만들어 두세요. 23장 "다음 단계" 참고.
 - **모바일 GPU 성능**: 모바일 GPU 는 데스크톱보다 **연산량이 훨씬 적고 발열·배터리 제약**이 큽니다. 데스크톱에서 60fps 로 돌던 SR 이 모바일에선 프레임을 못 맞출 수 있습니다. 대응: 더 작은 모델, Y 채널에만 SR 적용, 해상도/프레임레이트 낮추기, 또는 모바일에선 SR 끄기.
 
 > 주의: 데스크톱 한 대에서 잘 된다고 끝이 아닙니다. WebGPU 기능은 자동 검증이 안 되는 부분이라(CLAUDE.md "검증" 절), **실기기 매트릭스에서 직접** 확인해야 합니다. 특히 모바일은 같은 셰이더라도 정밀도·성능이 달라 결과가 미묘하게 다를 수 있습니다.

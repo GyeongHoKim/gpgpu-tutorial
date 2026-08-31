@@ -96,6 +96,7 @@ GPU 에 일을 시키는 방법은 크게 두 갈래입니다. 둘 다 `device.c
 
 - `WebGPU: 준비 완료`
 - `canvas format: bgra8unorm` (환경에 따라 `rgba8unorm` 일 수 있음)
+- `GPU: intel / gen-12lp` 같은 값 (`adapter.info` 의 `vendor` / `architecture`. 브라우저가 개인정보 보호를 위해 빈 문자열로 돌려줄 수도 있습니다)
 - `max buffer size: ... MB`, `max workgroup X: ...`, `max invocations/wg: ...` (이 GPU 의 `adapter.limits` 값)
 - `timestamp-query: 있음/없음` (이 GPU 가 GPU 시간 측정 feature 를 지원하는지)
 - `device 상태: alive`

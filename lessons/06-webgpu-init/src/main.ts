@@ -40,9 +40,10 @@ async function main() {
 
   // 6) TODO: context.configure({ device, format, alphaMode: "opaque" }) 로 연결하세요.
 
-  // 7) TODO: adapter.limits 와 adapter.features 로 정보를 읽어
+  // 7) TODO: adapter.limits, adapter.features, adapter.info 로 정보를 읽어
   //          stats.set("WebGPU", "준비 완료"), stats.set("canvas format", format) 등으로 표시하세요.
-  //          예) adapter.limits.maxBufferSize, adapter.features.has("timestamp-query")
+  //          예) adapter.limits.maxBufferSize, adapter.features.has("timestamp-query"),
+  //              adapter.info.vendor / adapter.info.architecture (어떤 GPU 를 잡았는지)
 
   stats.set("상태", "src/main.ts 의 TODO 를 채우세요");
 }

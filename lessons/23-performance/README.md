@@ -286,6 +286,23 @@ flowchart TD
 
 > 주의(측정 방식과 한계): 이 저장소의 GPU 시간 측정(`measureGpuMs`, `src/core/gpu-timer.ts`)은 `timestamp-query` 같은 정밀 GPU 타이머를 쓰지 **않습니다.** 대신 작업을 제출하고 `device.queue.onSubmittedWorkDone()`이 끝날 때까지 기다린 **wall-clock 시간**(`performance.now()` 차이)을 잽니다. 어디서나 동작하지만 제출·동기화 오버헤드가 포함된 **근사치**이고, `onSubmittedWorkDone` 대기 때문에 매 프레임 GPU·CPU가 동기화되는 점도 감안하세요. 더 정밀하게 재려면 `timestamp-query` feature(브라우저·디바이스에 따라 미지원/비활성일 수 있어 `requestDevice` 시 `requiredFeatures: ["timestamp-query"]`로 요청)로 GPU 내부 타임스탬프를 읽어야 하지만, 이 튜토리얼은 가용성을 위해 wall-clock 폴백을 택했습니다.
 
+### 다음 단계 — 이 챕터 밖의 최적화 카드
+
+원칙 1~6 은 "우리가 짠 코드 안에서" 줄일 수 있는 것들이었습니다. 그래도 예산을 못 맞추면, WebGPU 가 **선택 기능(optional feature)** 으로 제공하는 카드가 남아 있습니다.
+
+여기서 **선택 기능**이란, 모든 WebGPU 구현이 반드시 제공하지는 않고 브라우저·기기가 지원할 때만 쓸 수 있는 기능입니다. `requestDevice` 할 때 `requiredFeatures` 로 명시해서 요청해야 하고, 지원하지 않는 환경에서는 **요청 자체가 실패**합니다. 그래서 `adapter.features.has(...)` 로 먼저 확인하고 **폴백 경로를 반드시 함께 둬야** 합니다.
+
+| feature | 무엇을 주는가 | 우리 conv 에 어떻게 쓰이나 | 지원 범위 |
+| --- | --- | --- | --- |
+| `subgroups` | workgroup 안의 스레드들이 **레지스터 수준에서 값을 주고받는** 연산(합·최댓값 등)을 제공 | conv 의 누산(원칙 1의 read 합산)을 workgroup 공유 메모리 없이 처리해, 동기화 비용을 줄일 수 있다. WGSL 에서 `enable subgroups;` 를 선언해야 한다 | **Chrome 134+ 전용**(2025-02). Firefox·Safari 는 아직 미지원 |
+| `shader-f16` | 셰이더 안에서 **16비트 부동소수점**(`f16`) 연산 | weight 와 feature map 을 절반 크기로 다뤄 **메모리 대역폭을 절반**으로 줄인다. 22장에서 "실서비스라면 FP16" 이라고 예고한 그 카드다 | Chrome 지원. Firefox 구현 완료, Safari 도 도입에 긍정적 |
+
+> 주의(지원 범위): `subgroups` 는 현재 **Chrome 계열에서만** 동작합니다. 25장에서 볼 "고객의 다양한 환경" 관점에서 보면, 이 카드는 전 사용자에게 일괄 적용할 최적화가 아니라 **지원되는 기기에서만 켜지는 추가 경로**입니다. 두 벌의 셰이더를 유지할 값어치가 있는지 먼저 따져 보세요.
+
+> 주의: 두 기능을 함께 쓰려면 `requiredFeatures: ["subgroups", "shader-f16"]` 처럼 **각각 요청**합니다. 예전에 있던 `subgroups-f16` 이라는 실험 feature 는 Chrome 133 에서 폐기 예고되었으니 쓰지 마세요.
+
+> 주의(정밀도): `f16` 은 빠른 대신 표현 범위와 정밀도가 좁습니다. conv 출력이 누적되면서 오차가 커질 수 있으므로, CLAUDE.md 의 "CPU 먼저 → GPU → 비교" 원칙대로 **CPU f32 기준 구현과 max abs diff 를 반드시 비교**한 뒤에 도입하세요. "눈으로 비슷"은 근거가 아닙니다.
+
 ## 완성되면 이런 화면
 
 이 챕터는 실행 코드가 없으므로 새 화면은 없습니다. 대신 **22장 데모를 다시 띄워**(`bun run dev 22`) stats 패널을 성능의 눈으로 읽어 보세요.

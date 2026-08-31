@@ -22,7 +22,7 @@ async function main() {
   if (!navigator.gpu) {
     throw new Error(
       "이 브라우저는 WebGPU 를 지원하지 않습니다. (navigator.gpu 가 없음)\n" +
-        "최신 Chrome/Edge 또는 WebGPU 지원 Safari 에서 열어주세요.",
+        "Chrome/Edge 113+, Safari 26+, Firefox 141+(Windows) 에서 열어주세요.",
     );
   }
 
@@ -70,11 +70,16 @@ async function main() {
   // 7) adapter 정보를 읽어 화면에 표시한다.
   //    limits: GPU 가 보장하는 한계값(버퍼 크기, workgroup 크기 등). 후속 챕터에서 자주 본다.
   //    features: 선택적으로 켤 수 있는 추가 기능 목록. 존재 여부를 has() 로 확인한다.
+  //    info: 어떤 GPU 를 잡았는지 알려주는 정보(vendor/architecture/device/description).
+  //          예전에는 비동기 requestAdapterInfo() 였지만 지금은 동기 프로퍼티다.
+  //          25장에서 다룰 "기기마다 성능·한계가 다르다" 를 눈으로 확인하는 첫 창구다.
   const limits = adapter.limits;
+  const info = adapter.info;
   const hasTimestamp = adapter.features.has("timestamp-query");
 
   stats.set("WebGPU", "준비 완료");
   stats.set("canvas format", format);
+  stats.set("GPU", `${info.vendor || "?"} / ${info.architecture || "?"}`);
   stats.set("max buffer size", `${(limits.maxBufferSize / (1024 * 1024)).toFixed(0)} MB`);
   stats.set(
     "max workgroup X",

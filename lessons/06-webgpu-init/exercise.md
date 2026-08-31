@@ -9,7 +9,7 @@ bun install        # 처음 한 번
 bun run dev 6      # 6장 개발 서버 (http://localhost:5173)
 ```
 
-WebGPU 지원 브라우저(Chrome/Edge 최신, 또는 WebGPU 지원 Safari)로 엽니다.
+WebGPU 지원 브라우저로 엽니다(Chrome/Edge 113+, Safari 26+, Firefox 141+).
 
 ## 과제
 
@@ -43,6 +43,8 @@ WebGPU 지원 브라우저(Chrome/Edge 최신, 또는 WebGPU 지원 Safari)로 �
    - `stats.set("canvas format", format);`
    - `adapter.limits` 에서 한두 개(예: `maxBufferSize`, `maxComputeWorkgroupSizeX`)를 표시
    - `adapter.features.has("timestamp-query")` 결과를 표시
+   - `adapter.info.vendor` / `adapter.info.architecture` 로 어떤 GPU 를 잡았는지 표시
+     (`adapter.info` 는 동기 프로퍼티입니다. 예전 API 인 `requestAdapterInfo()` 는 쓰지 않습니다)
 
 ## 성공 기준
 
