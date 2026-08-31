@@ -14,7 +14,7 @@ export async function initWebGPU(): Promise<GpuContext> {
   if (!navigator.gpu) {
     throw new Error(
       "이 브라우저는 WebGPU 를 지원하지 않습니다. (navigator.gpu 가 없음)\n" +
-        "최신 Chrome/Edge 또는 WebGPU 지원 Safari 에서 열어주세요.",
+        "Chrome/Edge 113+, Safari 26+, Firefox 141+(Windows) 에서 열어주세요.",
     );
   }
   const adapter = await navigator.gpu.requestAdapter();

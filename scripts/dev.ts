@@ -24,7 +24,8 @@ import lesson20 from "../lessons/20-video-frame-input/index.html";
 import lesson21 from "../lessons/21-request-video-frame-callback/index.html";
 import lesson22 from "../lessons/22-realtime-sr-player/index.html";
 
-// 개념 챕터(01, 02)는 실행 코드가 없어 등록하지 않는다 (README 만 존재).
+// 개념 챕터(01, 02, 16, 23, 24, 25)는 실행 코드가 없어 등록하지 않는다 (README + exercise.md 만 존재).
+// 옵셔널 트랙(O1~O4)은 PyTorch 스크립트라 이 dev 서버 대상이 아니다.
 const lessons: Record<string, unknown> = {
   "03": lesson03,
   "04": lesson04,
@@ -72,4 +73,4 @@ const server = Bun.serve({
 });
 
 console.log(`개발 서버: http://localhost:${server.port}  (lesson ${arg})`);
-console.log("WebGPU 지원 브라우저(Chrome/Edge 최신 등)로 열어주세요.");
+console.log("WebGPU 지원 브라우저로 열어주세요. (Chrome/Edge 113+, Safari 26+, Firefox 141+(Windows))");

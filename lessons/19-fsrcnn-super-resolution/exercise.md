@@ -9,7 +9,7 @@ bun install        # 처음 한 번
 bun run dev 19     # 19장 개발 서버 (http://localhost:5173)
 ```
 
-WebGPU 지원 브라우저(Chrome/Edge 최신)로 엽니다.
+WebGPU 지원 브라우저로 엽니다(Chrome/Edge 113+, Safari 26+, Firefox 141+).
 
 ## 핵심 차이 (18장과 반대)
 

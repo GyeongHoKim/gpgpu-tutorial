@@ -97,7 +97,7 @@ console.log("maxAbsDiff =", maxAbsDiff(cpu, gpu));         // src/math/color.ts
 
 초기화 단계 실패는 `src/core/webgpu.ts` 가 미리 잡아 메시지를 줍니다.
 
-- **`navigator.gpu` 없음**: 미지원 브라우저/비보안 컨텍스트 → 최신 Chrome/Edge·WebGPU Safari, `localhost`/https 에서 열기.
+- **`navigator.gpu` 없음**: 미지원 브라우저/비보안 컨텍스트 → Chrome/Edge 113+, Safari 26+, Firefox 141+(Windows), `localhost`/https 에서 열기.
 - **`requestAdapter()` null**: 하드웨어/드라이버 문제.
 - **device lost**: 동작 중 콘솔에 `GPU device lost: ...`. `device.lost` 는 **Promise** 라 try/catch 로 안 잡히고, `webgpu.ts` 가 `.then` 으로 콘솔에 남깁니다.
 

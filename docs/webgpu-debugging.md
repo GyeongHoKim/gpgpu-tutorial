@@ -173,7 +173,7 @@ GPU 초기화 단계의 두 가지 실패입니다. 둘 다 `src/core/webgpu.ts`
 
 | 증상 | 원인 | 해결 |
 |------|------|------|
-| 시작하자마자 "WebGPU 지원 안 함" 에러 | `navigator.gpu` 가 없음(미지원 브라우저/비보안 컨텍스트) | 최신 Chrome/Edge 또는 WebGPU 지원 Safari, `http://localhost` 또는 https 에서 열기 |
+| 시작하자마자 "WebGPU 지원 안 함" 에러 | `navigator.gpu` 가 없음(미지원 브라우저/비보안 컨텍스트) | Chrome/Edge 113+, Safari 26+, Firefox 141+(Windows), `http://localhost` 또는 https 에서 열기 |
 | "GPUAdapter 를 가져오지 못했습니다" | `requestAdapter()` 가 null | 하드웨어/드라이버 문제, 브라우저 플래그 확인 |
 | 동작 중 갑자기 멈추고 콘솔에 `GPU device lost: ...` | device 가 죽음(드라이버 리셋, 너무 큰 dispatch, TDR 등) | 콘솔의 `reason`/`message` 확인, dispatch 크기·버퍼 크기 점검 후 device 재생성 |
 

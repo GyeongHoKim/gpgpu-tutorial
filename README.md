@@ -11,10 +11,25 @@ bun install
 bun run dev 13      # 13장 개발 서버 (http://localhost:5173)
 ```
 
-- WebGPU 지원 브라우저(Chrome/Edge 최신 등)로 엽니다. 챕터는 `bun run dev <번호>`로 실행합니다.
+- WebGPU 지원 브라우저로 엽니다(아래 "브라우저 요구사항" 참고). 챕터는 `bun run dev <번호>`로 실행합니다.
 - 실습: 챕터 README로 개념을 읽고 → `src/`의 TODO를 채우고 → 브라우저로 확인 → `solution/`과 비교.
 - 테스트: `bun test` (CPU 기준 구현 검증).
 - 비디오 챕터(20~22)는 샘플 영상 `public/videos/sample.mp4`(저장소 포함)를 씁니다. 다시 만들려면 `bun run make:video`(ffmpeg 필요).
+
+## 브라우저 요구사항
+
+WebGPU 는 2026년 1월에 **Baseline**(주요 브라우저가 공통으로 지원하는 상태)에 도달했습니다. 아래 버전 이상이면 이 튜토리얼의 모든 챕터가 동작합니다.
+
+| 브라우저 | 지원 버전 |
+|---|---|
+| Chrome · Edge | 113+ (데스크톱), 121+ (Android), Linux 는 144+ (Intel Gen12+) / 147+ (NVIDIA) |
+| Safari | 26+ (macOS Tahoe 26 · iOS 26 · iPadOS 26 · visionOS 26) |
+| Firefox | 141+ (Windows), 145+ (Apple Silicon macOS), 147+ (전체 macOS) |
+
+- 아직 남아 있는 공백은 **Linux 의 Firefox** 와 **A12 이전 세대 iPhone** 입니다. 이 환경에서는 `navigator.gpu` 가 `undefined` 입니다.
+- WebGPU 는 **보안 컨텍스트**에서만 동작합니다. `https` 또는 `http://localhost` 로 여세요. `bun run dev` 가 띄우는 `http://localhost:5173` 은 조건을 만족합니다.
+- 지원 여부가 헷갈리면 `bun run check:webgpu` 로 확인 방법을 볼 수 있습니다.
+- 20~22장의 비디오 챕터는 `requestVideoFrameCallback` 을 씁니다. 이 API 는 Chrome 83+, Safari 15.4+, Firefox 132+ 에서 지원되므로 위 WebGPU 요구 버전을 만족하면 함께 충족됩니다.
 
 ## 스택 · 구조
 

@@ -9,7 +9,7 @@ bun install        # 처음 한 번
 bun run dev 03     # 3장 개발 서버 (http://localhost:5173)
 ```
 
-WebGPU 가 없어도 동작하지만, 같은 브라우저(Chrome/Edge 최신)로 열면 됩니다.
+WebGPU 가 없어도 동작하지만, 같은 브라우저(Chrome/Edge 113+, Safari 26+, Firefox 141+)로 열면 됩니다.
 
 ## 과제
 

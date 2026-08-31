@@ -99,7 +99,7 @@ function loop(now, metadata) {
 
 ### rVFC 미지원 브라우저 폴백
 
-rVFC는 Chrome/Edge/Safari에서 지원되지만, 일부 브라우저(과거 Firefox 등)에는 없을 수 있습니다. 기능 탐지로 분기하고, 없으면 rAF로 폴백합니다(프레임 정렬은 부정확해짐을 안내).
+rVFC는 Chrome 83+(2020), Safari 15.4+(2022), Firefox 132+(2024)에서 지원되어 현재 주요 브라우저를 모두 덮습니다. 그래도 사내 단말처럼 오래된 버전이 남아 있는 환경이 있으므로, 기능 탐지로 분기하고 없으면 rAF로 폴백합니다(프레임 정렬은 부정확해짐을 안내).
 
 ```ts
 const hasRVFC = "requestVideoFrameCallback" in HTMLVideoElement.prototype;

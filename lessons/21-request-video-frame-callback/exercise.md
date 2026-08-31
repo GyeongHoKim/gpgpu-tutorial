@@ -9,7 +9,7 @@ bun install        # 처음 한 번
 bun run dev 21     # 21장 개발 서버 (http://localhost:5173)
 ```
 
-WebGPU 지원 브라우저(Chrome/Edge 최신)로 엽니다. 샘플 영상은 `/videos/sample.mp4`로 서빙됩니다.
+WebGPU 지원 브라우저로 엽니다(Chrome/Edge 113+, Safari 26+, Firefox 141+). 샘플 영상은 `/videos/sample.mp4`로 서빙됩니다.
 
 ## 과제
 

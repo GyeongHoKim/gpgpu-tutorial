@@ -101,7 +101,7 @@ conv 연산 자체는 17장의 `src/core/cnn.ts` 가 담당합니다. 이 챕터
 
 > 스크린샷: `docs/assets/18-srcnn.png` (직접 캡처해 추가)
 
-> 주의(브라우저 확인 필요): 실제 GPU 동작은 자동 검증할 수 없습니다. `bun run dev 18` 로 WebGPU 지원 브라우저(Chrome/Edge 최신)에서 직접 확인하세요.
+> 주의(브라우저 확인 필요): 실제 GPU 동작은 자동 검증할 수 없습니다. `bun run dev 18` 로 WebGPU 지원 브라우저(Chrome/Edge 113+, Safari 26+, Firefox 141+)에서 직접 확인하세요.
 
 ## 자가 점검 질문
 

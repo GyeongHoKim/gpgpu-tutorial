@@ -9,7 +9,7 @@ bun install        # 처음 한 번
 bun run dev 22     # 22장 개발 서버 (http://localhost:5173)
 ```
 
-WebGPU 지원 브라우저(Chrome/Edge 최신)로 엽니다. 자동재생이 막히면 `재생` 버튼을 누르세요.
+WebGPU 지원 브라우저로 엽니다(Chrome/Edge 113+, Safari 26+, Firefox 141+). 자동재생이 막히면 `재생` 버튼을 누르세요.
 
 ## 제1 규칙 (반드시)
 

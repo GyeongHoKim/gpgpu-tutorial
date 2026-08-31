@@ -106,7 +106,7 @@ video.src = video.dataset.src!; // "/videos/sample.mp4"
 
 > 완성 화면 미리보기 자리: `docs/assets/20-video-grayscale.png` (브라우저에서 직접 캡처해 추가)
 
-이 챕터는 실제 GPU·비디오 동작이라 자동 검증이 불가능합니다. `bun run dev 20` 으로 직접 브라우저(Chrome/Edge 최신)에서 확인하세요.
+이 챕터는 실제 GPU·비디오 동작이라 자동 검증이 불가능합니다. `bun run dev 20` 으로 직접 브라우저(Chrome/Edge 113+, Safari 26+, Firefox 141+)에서 확인하세요.
 
 ## 자가 점검 질문
 

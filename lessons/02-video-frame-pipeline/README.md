@@ -101,7 +101,7 @@ video.requestVideoFrameCallback(onFrame);
 
 콜백의 두 번째 인자 `metadata` 에는 이 프레임의 타임스탬프(`mediaTime`), 지금까지 표시된 프레임 수(`presentedFrames`) 같은 정보가 들어 있습니다. 재생/일시정지/seek 처리나 프레임 스킵 전략에서 쓰는데, 자세한 활용은 20장에서 다룹니다.
 
-> 주의(브라우저 지원): `requestVideoFrameCallback` 은 비교적 최신 API 입니다. 대부분의 최신 Chrome/Edge/Safari 에서 동작하지만, 진짜 실무에서는 `if ("requestVideoFrameCallback" in HTMLVideoElement.prototype)` 로 존재 여부를 확인하고, 없으면 `requestAnimationFrame` 으로 대체하는 코드를 둡니다. 이 대체 전략도 20장에서 정리합니다.
+> 주의(브라우저 지원): `requestVideoFrameCallback` 은 Chrome 83+, Safari 15.4+, Firefox 132+ 에서 동작하므로 지금은 주요 브라우저를 모두 덮습니다. 다만 오래된 버전이 남아 있는 현장을 고려해, 실무에서는 `if ("requestVideoFrameCallback" in HTMLVideoElement.prototype)` 로 존재 여부를 확인하고, 없으면 `requestAnimationFrame` 으로 대체하는 코드를 둡니다. 이 대체 전략도 20장에서 정리합니다.
 
 ### 프레임이 GPU 로 가는 길
 
