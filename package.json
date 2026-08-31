@@ -9,10 +9,12 @@
     "check:webgpu": "bun run scripts/check-webgpu-support.ts",
     "make:weights": "bun run scripts/make-weights.ts",
     "make:video": "bash scripts/make-sample-video.sh",
-    "create-lesson": "bun run scripts/create-lesson.ts"
+    "create-lesson": "bun run scripts/create-lesson.ts",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@webgpu/types": "latest"
+    "@webgpu/types": "^0.1.72",
+    "typescript": "^7.0.2"
   }
 }
