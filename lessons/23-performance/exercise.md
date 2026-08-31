@@ -10,7 +10,7 @@
   - `src/core/blit.ts` — `Blitter.bindGroups` WeakMap
   - `src/core/pipeline.ts` — `dispatchSizeFor`
   - `lessons/22-realtime-sr-player/solution/main.ts` — setup vs 루프, `FRAME_BUDGET_MS`, `processing`
-  - `src/core/gpu-timer.ts` — `measureGpuMs` (timestamp-query)
+  - `src/core/gpu-timer.ts` — `measureGpuMs` (wall-clock 측정)
 
 ## 과제 A. conv 비용을 손으로 계산하기
 
@@ -58,7 +58,7 @@
 2. GPU 한 프레임이 25ms 걸리는데 프레임 스킵을 **안 한다면** 어떤 일이 벌어지나요? (큐, 지연 관점.)
 3. `processing`이 `true`인 동안 새 비디오 프레임이 오면 `onFrame`은 무엇을 하나요? 그게 2번의 문제를 어떻게 막나요?
 4. 그래도 SRCNN이 계속 예산을 넘는다면, **모델 구조를 바꾸지 않는** 대응 두 가지와 **구조를 바꾸는** 대응 한 가지를 적으세요. (힌트: 원칙 1·6, FSRCNN 전환.)
-5. (주의 연결) `measureGpuMs`가 의존하는 `timestamp-query`가 지원되지 않는 브라우저라면, GPU 시간을 어떻게 대신 잴 수 있을까요? 한 가지 폴백을 적으세요.
+5. (주의 연결) `measureGpuMs`는 `timestamp-query` 대신 `device.queue.onSubmittedWorkDone()`이 끝날 때까지 기다린 wall-clock 시간을 잽니다. 이 값이 GPU가 실제로 연산한 시간보다 크게 나오는 이유를 적고, `timestamp-query`로 재면 무엇이 달라지는지 한 줄로 적으세요.
 
 ## 자가 점검 (README와 동일 — 말로 설명해 보기)
 
