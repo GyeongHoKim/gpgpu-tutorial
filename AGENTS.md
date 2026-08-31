@@ -154,4 +154,4 @@ IDIS Pylon 파트의 신입 웹 개발자가 WebGPU와 WGSL을 단계적으로 �
 - **설명** (필수): 한국어, 명령형/요약형, 마침표 없이 간결하게. 무엇을 했는지.
 - **본문** (선택): 큰 변경은 불릿으로 무엇·왜를 적는다. 한국어.
 - **breaking change**: 호환성 깨짐은 `type!:` 또는 footer 에 `BREAKING CHANGE:` 명시.
-- **footer**: 커밋 메시지 끝에는 항상 `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>` 를 붙인다.
+- **footer**: 에이전트가 만든 커밋은 메시지 끝에 항상 `Co-Authored-By: Claude <noreply@anthropic.com>` 를 붙인다. 모델 이름이나 버전은 적지 않는다. 모델은 계속 바뀌는데 규약에 특정 버전을 박아 두면 금세 사실과 어긋나기 때문이다.
