@@ -1,32 +1,32 @@
 # 실습 O1. PyTorch 환경과 tensor·autograd 기초
 
-환경을 준비하고, tensor 와 autograd 를 직접 손으로 만져 보며 README 의 개념을 확인합니다. 코드는 짧고, 새 파일을 만들 필요 없이 `.venv/bin/python` 으로 한 줄씩 돌려도 됩니다.
+환경을 준비하고, tensor 와 autograd 를 직접 손으로 만져 보며 README 의 개념을 확인합니다. 코드는 짧고, 새 파일을 만들 필요 없이 `uv run python` 으로 한 줄씩 돌려도 됩니다.
 
 ## 준비
 
 저장소 루트(`gpgpu-tutorial/`)에서 한 번만 실행합니다.
 
 ```bash
-uv venv --python 3.12 .venv
-VIRTUAL_ENV=.venv uv pip install torch numpy pillow
+uv sync
 ```
 
 설치 확인:
 
 ```bash
-.venv/bin/python -c "import torch; print(torch.__version__)"
+uv run python -c "import torch; print(torch.__version__)"
 ```
 
-> 주의: `python` 이 아니라 **`.venv/bin/python`** 입니다. 시스템 Python 으로 돌리면 "No module named 'torch'" 가 납니다.
+> 주의: 그냥 `python` 이 아니라 **`uv run python`** 입니다. 시스템 Python 으로 돌리면 "No module named 'torch'" 가 납니다. 가상환경 안 python 의 경로는 OS 마다 다르므로(Windows `.venv\Scripts\python.exe`, macOS·Linux `.venv/bin/python`), 경로를 직접 쓰지 말고 `uv run` 을 쓰세요.
 
 ## 과제
 
 1. **디바이스 확인**
    사용 가능한 디바이스를 출력해 보세요. 학습 스크립트(O3)가 자동으로 고르는 그 디바이스입니다.
    ```bash
-   .venv/bin/python -c "import torch; print('cuda', torch.cuda.is_available(), '| mps', torch.backends.mps.is_available())"
+   uv run python -c "import torch; print(torch.accelerator.current_accelerator())"
    ```
-   - 셋(`cuda`/`mps`/`cpu`) 중 내 머신에서 무엇이 `True` 인지 적어 보세요.
+   - 가속기가 있으면 `cuda`·`mps` 등이, CPU 전용 머신이면 `None` 이 찍힙니다. 내 머신에서 무엇이 나오는지 적어 보세요.
+   - `torch.accelerator` 는 가속기 종류를 하나의 API 로 다룹니다. 예전 방식(`torch.cuda.is_available()` 과 `torch.backends.mps.is_available()` 를 각각 확인)과 비교해 무엇이 편해졌는지 생각해 보세요.
 
 2. **tensor 와 shape — 메인 트랙과 연결**
    다음을 만들어 각 `shape` 를 출력해 보세요.

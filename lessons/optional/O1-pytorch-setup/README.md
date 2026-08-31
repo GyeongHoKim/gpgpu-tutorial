@@ -36,31 +36,31 @@ flowchart LR
 
 이 챕터(O1)는 위 그림에서 **tensor 적재**와 **autograd→gradient** 두 칸의 기초를 다집니다. 실제 SR 모델 학습(전체 루프)은 O3 에서 합니다.
 
-### 2. 설치: 이 저장소의 `uv` 가상환경
+### 2. 설치: 이 저장소의 `uv` 프로젝트
 
-이 저장소는 Python 의존성을 **`uv`** 가상환경(`.venv`)으로 관리합니다. 시스템 Python 을 더럽히지 않고, 저장소 루트에 `.venv` 폴더 하나로 격리합니다. 저장소 루트(`gpgpu-tutorial/`)에서 아래를 **한 번만** 실행합니다.
+이 저장소는 Python 의존성을 **`uv` 프로젝트**로 관리합니다. 저장소 루트의 `pyproject.toml` 이 필요한 패키지를, `uv.lock` 이 **정확한 버전**을 적어 둡니다. 저장소 루트(`gpgpu-tutorial/`)에서 아래 한 줄이면 끝입니다.
 
 ```bash
-# 1) Python 3.12 가상환경 생성 (.venv 폴더가 만들어진다)
-uv venv --python 3.12 .venv
-
-# 2) 학습에 필요한 패키지 설치
-VIRTUAL_ENV=.venv uv pip install torch numpy pillow
+uv sync
 ```
+
+이 한 줄이 `.venv` 가상환경을 만들고, `uv.lock` 에 잠긴 버전 그대로 설치합니다. 시스템 Python 은 건드리지 않습니다.
 
 - `torch`: PyTorch 본체(tensor·autograd·신경망).
 - `numpy`: 수치 배열. PyTorch tensor 와 서로 변환된다.
 - `pillow`(PIL): 이미지 읽기/쓰기. O3 에서 LR/HR 패치를 다룰 때 쓴다.
 
-설치되면 `.venv/bin/python` 으로 스크립트를 돌립니다(O3 와 동일한 방식).
+설치되면 **`uv run`** 으로 스크립트를 돌립니다(O3 와 동일한 방식).
 
 ```bash
-.venv/bin/python -c "import torch; print(torch.__version__)"
+uv run python -c "import torch; print(torch.__version__)"
 ```
 
-> **주의(시스템 Python 말고 `.venv`):** `python script.py` 처럼 그냥 `python` 을 쓰면 시스템 Python 이 잡혀 PyTorch 를 못 찾을 수 있습니다("ModuleNotFoundError: No module named 'torch'" 의 단골 원인). 이 저장소에서는 항상 **`.venv/bin/python`** 으로 실행하세요(또는 가상환경을 activate 한 뒤 `python`).
+> **주의(`uv run` 을 쓰는 이유):** `python script.py` 처럼 그냥 `python` 을 쓰면 시스템 Python 이 잡혀 PyTorch 를 못 찾습니다("ModuleNotFoundError: No module named 'torch'" 의 단골 원인). 가상환경 안의 python 을 직접 가리키는 방법도 있지만, 그 경로가 **OS 마다 다릅니다** — Windows 는 `.venv\Scripts\python.exe`, macOS·Linux 는 `.venv/bin/python` 입니다. `uv run` 은 이 차이를 알아서 처리하므로 어느 OS 에서든 **명령이 똑같습니다.** 이 저장소는 항상 `uv run` 을 씁니다.
 
-> **주의(torch 버전·디바이스):** PyTorch 는 실행 디바이스로 **`cuda`**(NVIDIA GPU), **`mps`**(Apple Silicon Mac), **`cpu`** 중 하나를 씁니다. 설치된 torch 빌드와 하드웨어에 따라 쓸 수 있는 디바이스가 다릅니다. 학습 스크립트는 보통 "있으면 GPU, 없으면 CPU"를 자동으로 고릅니다(아래 5절). 버전·디바이스가 안 맞아 생기는 오류가 잦으니, 막히면 먼저 `torch.__version__` 과 사용 가능한 디바이스부터 확인하세요.
+> **주의(잠긴 버전 = 재현성):** `uv.lock` 이 저장소에 커밋되어 있으므로, 누가 언제 `uv sync` 를 하든 **같은 버전**이 깔립니다. 학습해서 만든 weight 는 메인 트랙(18·19장)과 `model/architecture.md` 의 계약으로 이어져 있는데, 버전이 제각각이면 결과가 미묘하게 달라질 수 있습니다. 그래서 매번 최신을 받는 대신 lock 을 씁니다.
+
+> **주의(torch 빌드와 디바이스):** PyTorch 는 실행 디바이스로 **`cuda`**(NVIDIA GPU), **`mps`**(Apple Silicon Mac), **`cpu`** 중 하나를 씁니다. **설치된 빌드**에 따라 쓸 수 있는 디바이스가 달라지는 것이 함정입니다. NVIDIA GPU 가 있어도 CPU 빌드를 깔면 `cuda` 를 못 씁니다. 그래서 `pyproject.toml` 이 받을 빌드를 명시해 두었습니다 — Windows·Linux 는 CUDA 빌드(`+cu126`), macOS 는 CPU 빌드입니다(PyTorch 는 macOS 용 CUDA 빌드를 만들지 않고, Apple Silicon 의 `mps` 는 CPU wheel 안에 들어 있습니다). 학습 스크립트는 "가속기가 있으면 그것, 없으면 CPU"를 자동으로 고릅니다(O3 의 `train_srcnn.py` 안 `pick_device()`). 막히면 먼저 `torch.__version__` 을 확인하세요. 뒤에 `+cu126` 이 붙어 있는지가 CUDA 빌드인지 아닌지를 알려줍니다.
 
 ### 3. tensor — WGSL 의 vec·`Float32Array` 와 같은 "숫자 묶음"
 
@@ -131,7 +131,7 @@ autograd 를 켜는 스위치가 tensor 의 **`requires_grad`** 속성입니다.
 
 ## PyTorch 예시 코드 스니펫
 
-> 아래는 **개념 확인용 코드 조각**입니다(실행 파일이 아니라 읽고 직접 쳐 보는 용도). `.venv/bin/python` 으로 한 줄씩 따라 해 보세요. 실제 학습 스크립트는 O3 에 있습니다.
+> 아래는 **개념 확인용 코드 조각**입니다(실행 파일이 아니라 읽고 직접 쳐 보는 용도). `uv run python` 으로 한 줄씩 따라 해 보세요. 실제 학습 스크립트는 O3 에 있습니다.
 
 **(a) tensor 만들기 — vec/행렬을 tensor 로**
 
@@ -185,18 +185,19 @@ print(x.grad)         # tensor(6.)   ← 2*x = 2*3 = 6, 손으로 미분한 값�
 
 ## 완성되면 이런 화면
 
-- `uv venv` · `uv pip install` 이 끝나면 저장소 루트에 `.venv/` 폴더가 생기고, 아래가 버전 문자열(예: `2.x.x`)을 출력합니다.
+- `uv sync` 가 끝나면 저장소 루트에 `.venv/` 폴더가 생기고, 아래가 버전 문자열을 출력합니다.
 
   ```bash
-  .venv/bin/python -c "import torch; print(torch.__version__)"
-  # 2.x.x
+  uv run python -c "import torch; print(torch.__version__)"
+  # 2.13.0+cu126   (macOS 는 +cu126 없이 2.13.0 으로 나옵니다)
   ```
 
 - 위 (c) 스니펫을 실행하면 `tensor(6.)` 가 찍힙니다. 손으로 미분한 $\dfrac{dL}{dx}=2x=6$ 과 같은 값이 **자동으로** 나온다는 것을 눈으로 확인하면 이 챕터의 목표(autograd 직관)는 달성된 것입니다.
 - 사용 가능한 디바이스도 확인해 둡니다(학습 스크립트가 자동으로 고르는 그 디바이스).
 
   ```bash
-  .venv/bin/python -c "import torch; print('cuda', torch.cuda.is_available(), '| mps', torch.backends.mps.is_available())"
+  uv run python -c "import torch; print(torch.accelerator.current_accelerator())"
+  # 가속기가 있으면 cuda / mps 등이, CPU 전용 머신이면 None 이 찍힙니다.
   ```
 
 ## 자가 점검 질문
@@ -205,4 +206,4 @@ print(x.grad)         # tensor(6.)   ← 2*x = 2*3 = 6, 손으로 미분한 값�
 
 1. PyTorch 의 **tensor** 가 메인 트랙에서 쓴 WGSL `vec3f` 나 JS `Float32Array` 와 어떻게 같고, **shape** 와 `reshape(-1)` 이 그 둘을 어떻게 잇는지 설명해보세요. conv weight 의 shape 가 왜 `[outC, inC, kh, kw]` 인지도(16장과 연결해) 말해보세요.
 2. `requires_grad=True` 가 무엇을 표시하며, `loss.backward()` 를 부르면 무슨 일이 일어나는지(계산 그래프·역전파·`.grad`) 설명해보세요. $L = x^2$, $x=3$ 에서 gradient 가 왜 $6$ 인지도 함께.
-3. 메인 트랙에 Python 이 필요 없는 이유, 그리고 이 저장소에서 **시스템 Python 말고 `.venv/bin/python`** 을 써야 하는 이유를 설명해보세요. `cuda`/`mps`/`cpu` 디바이스가 무엇을 뜻하는지도 한 줄로.
+3. 메인 트랙에 Python 이 필요 없는 이유, 그리고 이 저장소에서 **시스템 `python` 말고 `uv run`** 을 써야 하는 이유를 설명해보세요. 가상환경 안 python 의 경로가 OS 마다 어떻게 다른지, `uv.lock` 이 왜 저장소에 커밋되어 있는지도 함께 말해보세요. 그리고 `cuda`/`mps`/`cpu` 가 무엇을 뜻하는지, NVIDIA GPU 가 있는데도 `cuda` 를 못 쓰는 상황이 왜 생기는지 한 줄로 답해보세요.

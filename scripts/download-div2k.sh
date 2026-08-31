@@ -52,4 +52,4 @@ case "$WHICH" in
 esac
 
 echo ""
-echo "DIV2K 준비 완료. 학습: .venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py"
+echo "DIV2K 준비 완료. 학습: uv run lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py"

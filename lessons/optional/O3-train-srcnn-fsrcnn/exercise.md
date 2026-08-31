@@ -5,23 +5,22 @@
 ## 준비
 
 ```bash
-uv venv --python 3.12 .venv
-VIRTUAL_ENV=.venv uv pip install torch numpy pillow
-bash scripts/download-div2k.sh
+uv sync
+bash scripts/download-div2k.sh   # Windows 는 Git Bash 에서 실행
 ```
 
 ## 과제
 
 1. **두 모델 학습**
    ```bash
-   .venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py
-   .venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_fsrcnn.py
+   uv run lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py
+   uv run lessons/optional/O3-train-srcnn-fsrcnn/train_fsrcnn.py
    ```
    epoch마다 loss가 줄어드는지 확인하세요. (환경변수 `EPOCHS`, `BATCH`로 조절)
 
 2. **export + 연결**
    ```bash
-   .venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/export_checkpoint.py
+   uv run lessons/optional/O3-train-srcnn-fsrcnn/export_checkpoint.py
    bun run make:weights
    ```
 

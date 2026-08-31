@@ -42,6 +42,15 @@ WebGPU 는 2026년 1월에 **Baseline**(주요 브라우저가 공통으로 지�
 - **메인 트랙** (`lessons/`): WebGPU/WGSL 쉐이더와 GPU 추론. Python 불필요.
 - **옵셔널 트랙** (`lessons/optional/`): PyTorch로 SR 모델을 직접 학습해 메인 트랙 weight를 만든다.
 
+옵셔널 트랙만 Python이 필요합니다. 저장소 루트의 `pyproject.toml`·`uv.lock`으로 [uv](https://docs.astral.sh/uv/)가 환경을 관리합니다.
+
+```bash
+uv sync                                                    # lock에 잠긴 버전 그대로 설치
+uv run lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py
+```
+
+`uv run`을 쓰면 가상환경 경로(Windows `.venvScripts`, macOS·Linux `.venv/bin`)를 신경 쓸 필요가 없어 **OS와 무관하게 명령이 같습니다.** torch는 Windows·Linux에서 CUDA 빌드, macOS에서 CPU 빌드를 받도록 `pyproject.toml`에 지정되어 있습니다.
+
 ## 챕터 (TOC)
 
 각 항목은 해당 챕터의 README 링크입니다.

@@ -22,6 +22,7 @@ class DIV2KPatches(Dataset):
             raise RuntimeError(
                 f"HR 이미지를 찾지 못했습니다: {hr_dir}\n"
                 "먼저 'bash scripts/download-div2k.sh' 로 DIV2K 를 받으세요."
+                " (Windows 는 Git Bash 에서 실행하세요.)"
             )
         assert patch_hr % scale == 0, "patch_hr 은 scale 로 나누어떨어져야 합니다."
         self.patch_hr = patch_hr

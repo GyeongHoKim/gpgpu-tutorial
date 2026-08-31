@@ -53,6 +53,8 @@ bash scripts/download-div2k.sh         # valid HR 100장 (~430MB)
 # 정식 학습은: bash scripts/download-div2k.sh train   (800장, ~3.5GB)
 ```
 
+> 주의(Windows): 이 스크립트는 bash 스크립트입니다. Windows 에서는 **Git Bash** 로 실행하세요. PowerShell·cmd 에서는 동작하지 않습니다. 학습·export 는 `uv run` 이라 어느 셸에서든 됩니다.
+
 > 주의(정규화 일치): 학습 입력은 `[0,1]`로 정규화합니다. 메인 트랙 WGSL 추론도 동일하게 `[0,1]`을 써야 합니다. 어긋나면 결과가 깨집니다.
 
 > 주의(deconvolution): FSRCNN의 deconv는 `checkerboard artifact`(격자 무늬)를 만들 수 있습니다. stride와 kernel 크기 관계에서 생기며, 19장에서 추론 측면을 다룹니다.
@@ -60,19 +62,18 @@ bash scripts/download-div2k.sh         # valid HR 100장 (~430MB)
 ## 실행 방법
 
 ```bash
-# 0) 가상환경 (처음 한 번)
-uv venv --python 3.12 .venv
-VIRTUAL_ENV=.venv uv pip install torch numpy pillow
+# 0) Python 환경 (처음 한 번). uv.lock 에 잠긴 버전 그대로 설치된다.
+uv sync
 
 # 1) 데이터
 bash scripts/download-div2k.sh
 
 # 2) 학습
-.venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py
-.venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/train_fsrcnn.py
+uv run lessons/optional/O3-train-srcnn-fsrcnn/train_srcnn.py
+uv run lessons/optional/O3-train-srcnn-fsrcnn/train_fsrcnn.py
 
 # 3) export -> Bun-readable checkpoint
-.venv/bin/python lessons/optional/O3-train-srcnn-fsrcnn/export_checkpoint.py
+uv run lessons/optional/O3-train-srcnn-fsrcnn/export_checkpoint.py
 
 # 4) checkpoint -> 메인 트랙 weights.ts (Python 불필요)
 bun run make:weights
